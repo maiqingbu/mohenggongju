@@ -366,17 +366,18 @@ export function buildOpeningWorkflow(config: LifecycleConfig): WorkflowStep[] {
     },
     approval: 'auto',
     skippable: true,
-    next: 'opening_compress_expand',
+    next: 'opening_length_normalizer',
   })
 
-  // 字数调整
+  // 字数修正
   steps.push({
-    id: 'opening_compress_expand',
-    agentId: 'compress_expand',
+    id: 'opening_length_normalizer',
+    agentId: 'length_normalizer',
     inputs: {
       content: '@ctx.step:opening_generate',
       currentWords: '@ctx.step:opening_length_check',
       targetWords: String(config.wordsPerChapter),
+      action: 'compress',
     },
     approval: 'always',
     skippable: true,
@@ -388,7 +389,21 @@ export function buildOpeningWorkflow(config: LifecycleConfig): WorkflowStep[] {
     id: 'opening_style_review',
     agentId: 'style_review',
     inputs: {
-      content: '@ctx.step:opening_compress_expand',
+      content: '@ctx.step:opening_length_normalizer',
+    },
+    approval: 'always',
+    skippable: true,
+    next: 'opening_reviser',
+  })
+
+  // 审计驱动修订
+  steps.push({
+    id: 'opening_reviser',
+    agentId: 'reviser',
+    inputs: {
+      mode: 'auto',
+      content: '@ctx.step:opening_style_review',
+      issues: '@ctx.step:opening_style_review',
     },
     approval: 'always',
     skippable: true,
@@ -563,17 +578,18 @@ export function buildContinueWritingWorkflow(config: LifecycleConfig): WorkflowS
     },
     approval: 'auto',
     skippable: true,
-    next: 'continue_compress_expand',
+    next: 'continue_length_normalizer',
   })
 
-  // 字数调整
+  // 字数修正
   steps.push({
-    id: 'continue_compress_expand',
-    agentId: 'compress_expand',
+    id: 'continue_length_normalizer',
+    agentId: 'length_normalizer',
     inputs: {
       content: '@ctx.step:continue_generate',
       currentWords: '@ctx.step:continue_length_check',
       targetWords: String(config.wordsPerChapter),
+      action: 'compress',
     },
     approval: 'always',
     skippable: true,
@@ -585,7 +601,21 @@ export function buildContinueWritingWorkflow(config: LifecycleConfig): WorkflowS
     id: 'continue_style_review',
     agentId: 'style_review',
     inputs: {
-      content: '@ctx.step:continue_compress_expand',
+      content: '@ctx.step:continue_length_normalizer',
+    },
+    approval: 'always',
+    skippable: true,
+    next: 'continue_reviser',
+  })
+
+  // 审计驱动修订
+  steps.push({
+    id: 'continue_reviser',
+    agentId: 'reviser',
+    inputs: {
+      mode: 'auto',
+      content: '@ctx.step:continue_style_review',
+      issues: '@ctx.step:continue_style_review',
     },
     approval: 'always',
     skippable: true,

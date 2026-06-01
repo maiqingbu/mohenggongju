@@ -5,7 +5,7 @@
  */
 
 import type { ChapterOutlineStructured } from './useOutlines'
-import { estimateTokens, calculateBudget, truncateHeadTail } from './tokenBudget'
+import { estimateTokens, calculateBudget, truncateHeadTail, enforceContextBudget, type ContextBlock } from './tokenBudget'
 
 // ============================================================
 // 类型定义
@@ -202,83 +202,94 @@ export function compileChapterContext(params: {
 
   const phaseInfo = buildPhaseInfo(chapterOutline)
 
-  // 组装上下文
-  let context = ''
+  // 组装上下文 — 分块构建，通过 enforceContextBudget 控制每块体积
+  const blocks: ContextBlock[] = []
 
   // 作品基础信息
-  context += `【作品信息】\n`
-  context += `书名：${novelState.title}\n`
-  context += `类型：${novelState.genre} | 文风：${novelState.style}\n`
-  if (novelState.summary) context += `简介：${novelState.summary}\n`
-  context += `目标字数：${novelState.targetWordCount} | 每章：${novelState.wordsPerChapter}字\n`
-  context += `当前写作位置：第 ${currentChapter} 章\n\n`
+  let workInfo = `【作品信息】\n`
+  workInfo += `书名：${novelState.title}\n`
+  workInfo += `类型：${novelState.genre} | 文风：${novelState.style}\n`
+  if (novelState.summary) workInfo += `简介：${novelState.summary}\n`
+  workInfo += `目标字数：${novelState.targetWordCount} | 每章：${novelState.wordsPerChapter}字\n`
+  workInfo += `当前写作位置：第 ${currentChapter} 章`
+  blocks.push({ type: 'global_outline', label: '作品信息', content: workInfo })
 
   // Phase 位置
-  context += `【Phase 位置】\n${phaseInfo}\n\n`
+  blocks.push({ type: 'chapter_outline', label: 'Phase位置', content: `【Phase 位置】\n${phaseInfo}` })
 
   // 本章目标
-  context += `【本章目标】\n`
-  context += `标题：${chapterOutline.chapterTitle}\n`
-  context += `类型：${chapterOutline.chapterType}\n`
-  context += `场景：${chapterOutline.coreScene}\n`
-  context += `时间：${chapterOutline.timeSpan}\n`
-  context += `核心爽点：${chapterOutline.coreCoolPoint}\n`
-  context += `底层博弈：${chapterOutline.underlyingGame}\n`
-  context += `字数限制：${chapterOutline.wordLimit}字\n\n`
+  let chapterGoal = `【本章目标】\n`
+  chapterGoal += `标题：${chapterOutline.chapterTitle}\n`
+  chapterGoal += `类型：${chapterOutline.chapterType}\n`
+  chapterGoal += `场景：${chapterOutline.coreScene}\n`
+  chapterGoal += `时间：${chapterOutline.timeSpan}\n`
+  chapterGoal += `核心爽点：${chapterOutline.coreCoolPoint}\n`
+  chapterGoal += `底层博弈：${chapterOutline.underlyingGame}\n`
+  chapterGoal += `字数限制：${chapterOutline.wordLimit}字`
+  blocks.push({ type: 'chapter_outline', label: '本章目标', content: chapterGoal })
 
   // 出场角色
   if (relevantChars.length > 0) {
-    context += `【本章相关角色】\n`
+    let charBlock = `【本章相关角色】\n`
     for (const c of relevantChars) {
       const parts = [`- ${c.name}`]
       if (c.location) parts.push(`位置:${c.location}`)
       if (c.mood) parts.push(`情绪:${c.mood}`)
       if (c.goal) parts.push(`目标:${c.goal}`)
       if (c.lastAppearedChapter != null) parts.push(`上次出场:第${c.lastAppearedChapter}章`)
-      context += parts.join(' | ') + '\n'
+      charBlock += parts.join(' | ') + '\n'
     }
-    context += '\n'
+    blocks.push({ type: 'character_matrix', label: '相关角色', content: charBlock })
   }
 
   // 待推进伏笔
   if (relevantHooks.length > 0) {
-    context += `【待推进伏笔】\n`
+    let hookBlock = `【待推进伏笔】\n`
     for (const h of relevantHooks) {
       const icon = h.silenceChapters >= 10 ? '🔴' : h.silenceChapters >= 5 ? '🟡' : '🟢'
-      context += `${icon} ${h.name}（静默${h.silenceChapters}章）`
-      if (h.secret) context += ` → ${h.secret}`
-      context += '\n'
+      hookBlock += `${icon} ${h.name}（静默${h.silenceChapters}章）`
+      if (h.secret) hookBlock += ` → ${h.secret}`
+      hookBlock += '\n'
     }
-    context += '\n'
+    blocks.push({ type: 'foreshadow_ledger', label: '待推进伏笔', content: hookBlock })
   }
 
   // 最近章节回顾
   if (recentChapters.length > 0) {
-    context += `【最近章节回顾】\n`
+    let recentBlock = `【最近章节回顾】\n`
     for (const ch of recentChapters) {
-      context += `第${ch.chapterNumber}章 ${ch.title}: ${ch.summary.slice(0, 200)}\n`
-      if (ch.endingLine) context += `  结尾: ${ch.endingLine}\n`
+      recentBlock += `第${ch.chapterNumber}章 ${ch.title}: ${ch.summary.slice(0, 200)}\n`
+      if (ch.endingLine) recentBlock += `  结尾: ${ch.endingLine}\n`
     }
-    context += '\n'
+    blocks.push({ type: 'recent_chapters', label: '最近章节', content: recentBlock })
   }
 
   // 起承转合
-  context += `【剧情推演参考】\n`
-  context += `起: ${chapterOutline.act1_entryAndCrisis}\n`
-  context += `承: ${chapterOutline.act2_conflictEscalation}\n`
-  context += `转: ${chapterOutline.act3_keyBreakthrough}\n`
-  context += `合: ${chapterOutline.act4_aftermathAndCost}\n`
-  context += `钩子（${chapterOutline.hookType}）: ${chapterOutline.goldenHook}\n\n`
+  let plotRef = `【剧情推演参考】\n`
+  plotRef += `起: ${chapterOutline.act1_entryAndCrisis}\n`
+  plotRef += `承: ${chapterOutline.act2_conflictEscalation}\n`
+  plotRef += `转: ${chapterOutline.act3_keyBreakthrough}\n`
+  plotRef += `合: ${chapterOutline.act4_aftermathAndCost}\n`
+  plotRef += `钩子（${chapterOutline.hookType}）: ${chapterOutline.goldenHook}`
+  blocks.push({ type: 'chapter_outline', label: '剧情推演', content: plotRef })
 
   // 避免项
   if (novelState.avoidItems.length > 0) {
-    context += `【本书避免项】\n${novelState.avoidItems.map((a) => `- ${a}`).join('\n')}\n\n`
+    blocks.push({
+      type: 'style_guide',
+      label: '避免项',
+      content: `【本书避免项】\n${novelState.avoidItems.map((a) => `- ${a}`).join('\n')}`,
+    })
   }
 
   // 用户补充上下文
   if (extraContext) {
-    context += `【补充要求】\n${extraContext}\n\n`
+    blocks.push({ type: 'custom', label: '补充要求', content: `【补充要求】\n${extraContext}` })
   }
+
+  // 应用上下文块硬上限裁剪
+  const budgeted = enforceContextBudget(blocks)
+  const context = budgeted.blocks.map(b => b.content).join('\n\n')
 
   // Token 预算检查
   const budget = calculateBudget({

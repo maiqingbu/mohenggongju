@@ -1,12 +1,12 @@
 /**
  * 续写工作流 — 审阅模式兼容
  *
- * 流程：load_context → (gen_body → length_check → compress_expand → paragraph_fix → style_review → extract_settings) × N → volume_boundary_check → consistency_check → commit_write
+ * 流程：load_context → (gen_body → length_check → length_normalizer → paragraph_fix → style_review → reviser → extract_settings) × N → volume_boundary_check → consistency_check → commit_write
  *
  * 五层防御：
  *   第1层 — bodyAgent.parseOutput 内嵌 styleFilter 规则引擎（零 token）
  *   第2层 — length_check 字数检测（零 token，本地执行）
- *   第3层 — compress_expand 字数调整（LLM 压缩/扩展）
+ *   第3层 — length_normalizer 字数调整（LLM 压缩/扩展）
  *   第3.5层 — paragraph_fix 段落结构修复（LLM，仅当单句段占比>25%时触发）
  *   第4层 — style_review Agent（LLM 深度审查）
  *   第5层 — 人类审阅卡决策
@@ -92,18 +92,18 @@ export function buildContinueChapterWorkflow(config: ContinueChapterConfig): Wor
       },
       approval: 'auto',
       skippable: true,
-      next: `compress_expand_${idx}`,
+      next: `length_normalizer_${idx}`,
     })
 
-    // compress_expand_N — 第3层防御：LLM 字数调整
-    // 用 @ctx.step:gen_body_N 引用原始正文
+    // length_normalizer_N — 第3层防御：LLM 字数修正（单次压缩/扩写）
     steps.push({
-      id: `compress_expand_${idx}`,
-      agentId: 'compress_expand',
+      id: `length_normalizer_${idx}`,
+      agentId: 'length_normalizer',
       inputs: {
         content: `@ctx.step:gen_body_${idx}`,
         currentWords: `@ctx.step:length_check_${idx}`,
         targetWords,
+        action: 'compress',
       },
       approval: 'always',
       skippable: true,
@@ -115,7 +115,7 @@ export function buildContinueChapterWorkflow(config: ContinueChapterConfig): Wor
       id: `paragraph_fix_${idx}`,
       agentId: 'paragraph_fix',
       inputs: {
-        contentKey: `step:compress_expand_${idx}`,
+        contentKey: `step:length_normalizer_${idx}`,
       },
       approval: 'auto',
       skippable: true,
@@ -123,7 +123,6 @@ export function buildContinueChapterWorkflow(config: ContinueChapterConfig): Wor
     })
 
     // style_review_N — 第4层防御：LLM 深度文风审查
-    // 审查 paragraph_fix 修复后的结果（如有修复）或 compress_expand 的结果（回退）
     steps.push({
       id: `style_review_${idx}`,
       agentId: 'style_review',
@@ -132,6 +131,20 @@ export function buildContinueChapterWorkflow(config: ContinueChapterConfig): Wor
         chapterNo: String(chNo),
       },
       approval: 'on_warning',
+      skippable: true,
+      next: `reviser_${idx}`,
+    })
+
+    // reviser_N — 审计驱动修订（auto 模式：根据 style_review 问题自动选择策略）
+    steps.push({
+      id: `reviser_${idx}`,
+      agentId: 'reviser',
+      inputs: {
+        mode: 'auto',
+        content: `@ctx.step:paragraph_fix_${idx}`,
+        issues: `@ctx.step:style_review_${idx}`,
+      },
+      approval: 'always',
       skippable: true,
       next: autoExtract ? `extract_settings_${idx}` : (isLast ? 'consistency_check' : `gen_body_${idx + 1}`),
     })

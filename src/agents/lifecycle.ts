@@ -318,17 +318,18 @@ export function buildOpeningWorkflow(config: {
       },
       approval: 'auto',
       skippable: true,
-      next: `compress_expand_${chNo}`,
+      next: `length_normalizer_${chNo}`,
     })
 
-    // 字数调整
+    // 字数修正
     steps.push({
-      id: `compress_expand_${chNo}`,
-      agentId: 'compress_expand',
+      id: `length_normalizer_${chNo}`,
+      agentId: 'length_normalizer',
       inputs: {
         content: `@ctx.step:gen_body_${chNo}`,
         currentWords: `@ctx.step:length_check_${chNo}`,
         targetWords,
+        action: 'compress',
       },
       approval: 'always',
       skippable: true,
@@ -340,7 +341,7 @@ export function buildOpeningWorkflow(config: {
       id: `paragraph_fix_${chNo}`,
       agentId: 'paragraph_fix',
       inputs: {
-        contentKey: `step:compress_expand_${chNo}`,
+        contentKey: `step:length_normalizer_${chNo}`,
       },
       approval: 'auto',
       skippable: true,
@@ -356,6 +357,20 @@ export function buildOpeningWorkflow(config: {
         chapterNo: String(chNo),
       },
       approval: 'on_warning',
+      skippable: true,
+      next: `reviser_${chNo}`,
+    })
+
+    // 审计驱动修订
+    steps.push({
+      id: `reviser_${chNo}`,
+      agentId: 'reviser',
+      inputs: {
+        mode: 'auto',
+        content: `@ctx.step:paragraph_fix_${chNo}`,
+        issues: `@ctx.step:style_review_${chNo}`,
+      },
+      approval: 'always',
       skippable: true,
       next: isLast ? 'consistency_check' : `gen_body_${chNo + 1}`,
     })
@@ -469,17 +484,17 @@ export function buildContinueWithPreflightWorkflow(config: {
       },
       approval: 'auto',
       skippable: true,
-      next: `compress_expand_${idx}`,
+      next: `length_normalizer_${idx}`,
     })
 
-    // 字数调整
+    // 字数修正
     steps.push({
-      id: `compress_expand_${idx}`,
-      agentId: 'compress_expand',
+      id: `length_normalizer_${idx}`,
+      agentId: 'length_normalizer',
       inputs: {
-        content: `@ctx.step:gen_body_${idx}`,
-        currentWords: `@ctx.step:length_check_${idx}`,
+        genBodyStepId: `gen_body_${idx}`,
         targetWords,
+        action: 'compress',
       },
       approval: 'always',
       skippable: true,
@@ -491,7 +506,7 @@ export function buildContinueWithPreflightWorkflow(config: {
       id: `paragraph_fix_${idx}`,
       agentId: 'paragraph_fix',
       inputs: {
-        contentKey: `step:compress_expand_${idx}`,
+        contentKey: `step:length_normalizer_${idx}`,
       },
       approval: 'auto',
       skippable: true,
@@ -507,6 +522,20 @@ export function buildContinueWithPreflightWorkflow(config: {
         chapterNo: String(chNo),
       },
       approval: 'on_warning',
+      skippable: true,
+      next: `reviser_${idx}`,
+    })
+
+    // 审计驱动修订
+    steps.push({
+      id: `reviser_${idx}`,
+      agentId: 'reviser',
+      inputs: {
+        mode: 'auto',
+        genBodyStepId: `gen_body_${idx}`,
+        issues: `@ctx.step:style_review_${idx}`,
+      },
+      approval: 'always',
       skippable: true,
       next: isLast ? 'consistency_check' : `gen_body_${idx + 1}`,
     })

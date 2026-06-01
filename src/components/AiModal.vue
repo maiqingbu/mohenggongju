@@ -324,6 +324,8 @@ import { isTauri, localCurrentChapterId, localCurrentWorkId } from '../composabl
 import { type Note, NotesManager } from '../composables/useNotes'
 import { getPlatformProfile } from '../composables/usePlatformData'
 import { parseCreativeOutput } from '../composables/parseCreativeOutput'
+import { validatePostWrite, getLastEndingLines, getExistingTitles } from '../composables/postWriteValidator'
+import { formatHookContext, type HookEntry } from '../composables/useHookLedger'
 import { useLLM, type LLMGenerateParams } from '../composables/useLLM'
 
 // ── 类型 ──
@@ -988,9 +990,31 @@ function resolveContextInjection(): string {
         case 'charStateSnapshot':
           parts.push('【角色状态快照】\n' + resolveVariable('@角色状态快照', ctx))
           break
-        case 'foreshadowStatus':
+        case 'foreshadowStatus': {
           parts.push('【伏笔状态】\n' + resolveVariable('@伏笔状态', ctx))
+          // 附加伏笔账本摘要
+          try {
+            const w = store?.currentWork
+            if (w?.foreshadowings?.length > 0) {
+              const hooks: HookEntry[] = w.foreshadowings.map((f: any, i: number) => ({
+                hookId: f.id || `hook-${i}`,
+                name: f.name || '',
+                type: f.type || 'mystery',
+                status: f.status || 'open',
+                startChapter: f.plantedChapter || f.startChapter || 1,
+                lastAdvancedChapter: f.lastPushedChapter || f.plantedChapter || 1,
+                expectedPayoff: f.expectedPayoff || '',
+                notes: f.notes || '',
+                advancedCount: f.advancedCount || 0,
+              }))
+              const hookSummary = formatHookContext(hooks)
+              if (hookSummary && !hookSummary.includes('暂无活跃伏笔')) {
+                parts.push('【伏笔账本摘要】\n' + hookSummary)
+              }
+            }
+          } catch {}
           break
+        }
         case 'supplement':
           if (extra.value.trim()) {
             parts.push('【补充信息/额外要求】\n' + extra.value)
@@ -1190,6 +1214,35 @@ async function doGenerate() {
           }
         }
       } catch {}
+
+      // 写后校验（7 条硬规则 + 段落形状分析）
+      try {
+        const chs = getAllOrderedChapters()
+        let wordsPerChapter = 2500
+        try {
+          const wsRaw = localStorage.getItem('ns:ws:' + (store?.currentWorkId ?? repo.currentWorkId.value ?? 0))
+          if (wsRaw) {
+            const ws = JSON.parse(wsRaw)
+            if (ws.wordsPerChapter) wordsPerChapter = ws.wordsPerChapter
+          }
+        } catch {}
+        const validationResult = validatePostWrite({
+          content: output.value,
+          chapterTitle: currentChapterTitle(),
+          existingTitles: getExistingTitles(chs),
+          wordTarget: wordsPerChapter,
+          previousEndingLines: getLastEndingLines(chs),
+          hookChecks: [],
+        })
+        if (validationResult.issues.length > 0) {
+          const summary = validationResult.issues
+            .map(i => `- [${i.severity}] ${i.rule}: ${i.description}`)
+            .join('\n')
+          if (output.value.length + summary.length < maxChars) {
+            output.value += '\n\n---\n【写后校验】\n' + summary
+          }
+        }
+      } catch {}
     }
   } catch (e: any) {
     message.error('生成失败: ' + (e.message || String(e)))
@@ -1332,6 +1385,32 @@ ${chapterContext}
         const violations = scanStyleViolations(processed, 1)
         if (violations.length > 0) {
           processed += formatValidationSummary(violations)
+        }
+      } catch {}
+
+      // 写后校验
+      try {
+        const chs = getAllOrderedChapters()
+        let wordsPerChapter = 2500
+        try {
+          const wsRaw = localStorage.getItem('ns:ws:' + (store?.currentWorkId ?? repo.currentWorkId.value ?? 0))
+          if (wsRaw) {
+            const ws = JSON.parse(wsRaw)
+            if (ws.wordsPerChapter) wordsPerChapter = ws.wordsPerChapter
+          }
+        } catch {}
+        const validationResult = validatePostWrite({
+          content: processed,
+          chapterTitle: '第1章',
+          existingTitles: getExistingTitles(chs),
+          wordTarget: wordsPerChapter,
+          previousEndingLines: getLastEndingLines(chs),
+          hookChecks: [],
+        })
+        if (validationResult.issues.length > 0) {
+          processed += '\n\n---\n【写后校验】\n' + validationResult.issues
+            .map(i => `- [${i.severity}] ${i.rule}: ${i.description}`)
+            .join('\n')
         }
       } catch {}
 

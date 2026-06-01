@@ -630,6 +630,8 @@ import { createLengthCheckAgent } from '../agents/steps/lengthCheck'
 import { createCompressExpandAgent } from '../agents/steps/compressExpand'
 import { createParagraphFixAgent } from '../agents/steps/paragraphFix'
 import { createVolumeBoundaryCheckAgent } from '../agents/steps/volumeBoundaryCheck'
+import { createLengthNormalizerAgent } from '../agents/steps/lengthNormalizer'
+import { createReviserAgent } from '../agents/steps/reviser'
 import { buildContinueChapterWorkflow } from '../agents/workflows/continueChapter'
 import { detectLifecycleStage, buildOpeningWorkflow, buildContinueWithPreflightWorkflow, formatLifecycleResult } from '../agents/lifecycle'
 import { playNotifySound, playClickSound } from '../composables/useEditorSettings'
@@ -670,6 +672,8 @@ runner.registerAgents([
   createCompressExpandAgent(),
   createParagraphFixAgent(),
   createVolumeBoundaryCheckAgent(),
+  createLengthNormalizerAgent(),
+  createReviserAgent(),
 ])
 
 // R11: 持久化钩子 — 进入 awaiting 时存完整 Runner 快照
