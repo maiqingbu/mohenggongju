@@ -204,7 +204,7 @@ export function buildContinueChapterWorkflow(config: ContinueChapterConfig): Wor
       agentId: 'extract_settings',
       inputs: {
         action: 'extract',
-        target: '@ctx.lastOutput',
+        target: `@ctx.step:paragraph_fix_${config.chapterCount}`,
       },
       approval: 'on_warning',
       skippable: true,

@@ -456,11 +456,29 @@ export class WorkflowRunner {
 
   private async doWriteBack(agent: AgentSpec, parsed: Record<string, unknown>, step: WorkflowStep) {
     this._ctx._pendingWrites = (this._ctx._pendingWrites || []) as any[]
-    ;(this._ctx._pendingWrites as any[]).push({
+    const pwEntry = {
       stepId: step.id, agentId: agent.id,
       inputs: { ...step.inputs },
       data: parsed, timestamp: Date.now(),
-    })
+    }
+    ;(this._ctx._pendingWrites as any[]).push(pwEntry)
+
+    // G6: 安全网 — 立即写入 localStorage，防止流程中断导致生成数据丢失
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const workId = this._ctx.workId as number | undefined
+        if (workId) {
+          const key = `__wb_snap:${workId}`
+          const snaps: Array<typeof pwEntry> = JSON.parse(localStorage.getItem(key) || '[]')
+          // 去重：同 stepId 覆盖旧记录
+          const idx = snaps.findIndex((s: any) => s.stepId === step.id)
+          if (idx >= 0) snaps[idx] = pwEntry
+          else snaps.push(pwEntry)
+          localStorage.setItem(key, JSON.stringify(snaps))
+        }
+      } catch { /* localStorage 不可用或已满，静默跳过 */ }
+    }
+
     try {
       await agent.writeBack(parsed, { ...this._ctx })
       this.bus.emit('step:writeBack', step.id, parsed)

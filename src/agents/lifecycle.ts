@@ -397,7 +397,7 @@ export function buildOpeningWorkflow(config: {
   steps.push({
     id: 'extract_settings',
     agentId: 'extract_settings',
-    inputs: { action: 'extract', target: '@ctx.lastOutput' },
+    inputs: { action: 'extract', target: `@ctx.step:paragraph_fix_${chapterCount}` },
     approval: 'on_warning',
     skippable: true,
     next: 'commit_write',
@@ -495,7 +495,8 @@ export function buildContinueWithPreflightWorkflow(config: {
       id: `length_normalizer_${idx}`,
       agentId: 'length_normalizer',
       inputs: {
-        genBodyStepId: `gen_body_${idx}`,
+        content: `@ctx.step:gen_body_${idx}`,
+        currentWords: `@ctx.step:length_check_${idx}`,
         targetWords,
         action: 'compress',
       },
@@ -535,7 +536,7 @@ export function buildContinueWithPreflightWorkflow(config: {
       agentId: 'reviser',
       inputs: {
         mode: 'auto',
-        genBodyStepId: `gen_body_${idx}`,
+        content: `@ctx.step:paragraph_fix_${idx}`,
         issues: `@ctx.step:style_review_${idx}`,
       },
       approval: 'always',
@@ -562,7 +563,7 @@ export function buildContinueWithPreflightWorkflow(config: {
   steps.push({
     id: 'extract_settings',
     agentId: 'extract_settings',
-    inputs: { action: 'extract', target: '@ctx.lastOutput' },
+    inputs: { action: 'extract', target: `@ctx.step:paragraph_fix_${chapterCount}` },
     approval: 'on_warning',
     skippable: true,
     next: 'commit_write',

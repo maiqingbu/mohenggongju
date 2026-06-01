@@ -62,6 +62,10 @@ export function createCommitWriteAgent(): AgentSpec {
           await executeWrite(s.write)
           completed.push(s)
         }
+        // G6: 原子落盘成功后清除安全网
+        if (typeof localStorage !== 'undefined' && workId) {
+          localStorage.removeItem(`__wb_snap:${workId}`)
+        }
       } catch (e) {
         // 回滚已完成的写入
         for (const c of [...completed].reverse()) {

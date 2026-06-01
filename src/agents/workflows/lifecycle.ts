@@ -161,7 +161,7 @@ export function buildSettingCheckWorkflow(config: LifecycleConfig): WorkflowStep
       condition: (output: string) => {
         try {
           const result = JSON.parse(output)
-          if (result.complete) return null // 完成，跳过生成步骤
+          if (result.complete) return 'setting_commit' // 完成，跳过生成步骤
           return 'setting_generate' // 有缺失，进入生成步骤
         } catch {
           return 'setting_generate'
@@ -208,7 +208,7 @@ export function buildInfoCheckWorkflow(config: LifecycleConfig): WorkflowStep[] 
       condition: (output: string) => {
         try {
           const result = JSON.parse(output)
-          if (result.complete) return null
+          if (result.complete) return 'info_commit'
           return 'info_generate'
         } catch {
           return 'info_generate'
@@ -251,7 +251,7 @@ export function buildOutlineCheckWorkflow(config: LifecycleConfig): WorkflowStep
       },
       approval: 'auto',
       skippable: false,
-      next: 'outline_generate_main',
+      next: null, // 完成时结束；condition 路由到具体生成步骤
       condition: (output: string) => {
         try {
           const result = JSON.parse(output)
@@ -402,7 +402,7 @@ export function buildOpeningWorkflow(config: LifecycleConfig): WorkflowStep[] {
     agentId: 'reviser',
     inputs: {
       mode: 'auto',
-      content: '@ctx.step:opening_style_review',
+      content: '@ctx.step:opening_length_normalizer',
       issues: '@ctx.step:opening_style_review',
     },
     approval: 'always',
@@ -442,7 +442,7 @@ export function buildSettingUpdateWorkflow(config: LifecycleConfig): WorkflowSte
       condition: (output: string) => {
         try {
           const result = JSON.parse(output)
-          if (result.complete) return null
+          if (result.complete) return 'setting_update_commit'
           return 'setting_update_generate'
         } catch {
           return 'setting_update_generate'
@@ -494,10 +494,10 @@ export function buildContinueWritingWorkflow(config: LifecycleConfig): WorkflowS
         const result = JSON.parse(output)
         if (result.ready) return 'continue_generate'
         // 根据缺失项决定下一步
-        if (result.missingItems.some((i: any) => i.field === 'volume_outline')) {
+        if (result.missing.some((i: any) => i.field === 'volume_outline')) {
           return 'continue_generate_volume'
         }
-        if (result.missingItems.some((i: any) => i.field === 'chapter_outline')) {
+        if (result.missing.some((i: any) => i.field === 'chapter_outline')) {
           return 'continue_generate_chapter'
         }
         return 'continue_generate'
@@ -614,7 +614,7 @@ export function buildContinueWritingWorkflow(config: LifecycleConfig): WorkflowS
     agentId: 'reviser',
     inputs: {
       mode: 'auto',
-      content: '@ctx.step:continue_style_review',
+      content: '@ctx.step:continue_length_normalizer',
       issues: '@ctx.step:continue_style_review',
     },
     approval: 'always',

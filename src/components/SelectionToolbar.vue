@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 defineProps<{ isDark?: boolean }>()
 defineEmits<{
@@ -47,6 +47,21 @@ function show(x: number, y: number, highlighted: boolean) {
 }
 
 function hide() { visible.value = false }
+
+// F10: 滚动/窗口大小变化时隐藏工具栏（fixed 定位坐标已失效）
+function onScrollOrResize() {
+  if (visible.value) hide()
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScrollOrResize, { passive: true, capture: true })
+  window.addEventListener('resize', onScrollOrResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScrollOrResize, { capture: true })
+  window.removeEventListener('resize', onScrollOrResize)
+})
 
 defineExpose({ show, hide })
 </script>

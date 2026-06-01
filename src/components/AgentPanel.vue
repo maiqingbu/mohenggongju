@@ -627,7 +627,6 @@ import { createCommitWriteAgent } from '../agents/steps/commitWrite'
 import { createExtractSettingsAgent } from '../agents/steps/extractSettings'
 import { createStyleReviewAgent } from '../agents/steps/styleReview'
 import { createLengthCheckAgent } from '../agents/steps/lengthCheck'
-import { createCompressExpandAgent } from '../agents/steps/compressExpand'
 import { createParagraphFixAgent } from '../agents/steps/paragraphFix'
 import { createVolumeBoundaryCheckAgent } from '../agents/steps/volumeBoundaryCheck'
 import { createLengthNormalizerAgent } from '../agents/steps/lengthNormalizer'
@@ -640,7 +639,6 @@ import { ideaAgent } from '../agents/idea'
 import { settingAgent } from '../agents/setting'
 import { characterAgent } from '../agents/character'
 import { buildContinueChapterWorkflow } from '../agents/workflows/continueChapter'
-import { detectLifecycleStage, buildOpeningWorkflow, buildContinueWithPreflightWorkflow, formatLifecycleResult } from '../agents/lifecycle'
 import { playNotifySound, playClickSound } from '../composables/useEditorSettings'
 import { findAwaitingRuns, getRun, updateRun, type WorkflowRunRecord } from '../agents/persistence'
 import ApprovalCard from './ApprovalCard.vue'
@@ -688,7 +686,6 @@ runner.registerAgents([
   createExtractSettingsAgent(),
   createStyleReviewAgent(),
   createLengthCheckAgent(),
-  createCompressExpandAgent(),
   createParagraphFixAgent(),
   createVolumeBoundaryCheckAgent(),
   createLengthNormalizerAgent(),
