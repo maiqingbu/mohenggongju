@@ -124,11 +124,18 @@ export function updateWork(id: number, title: string) {
 
 export function deleteWork(id: number) {
   return serialized(async () => {
-    // 先清理关联的章节文件
+    // 先清理关联的章节文件和父卷索引
     const vols = await fetchVolumes(id)
+    const volIds = new Set(vols.map(v => v.id))
+    const parentIdx = await loadChapterParentIndex()
+    let idxDirty = false
     for (const vol of vols) {
       await remove(`${DATA_DIR}/chapters/${vol.id}.json`, { baseDir: BaseDirectory.AppData }).catch(() => {})
     }
+    for (const chId of Object.keys(parentIdx)) {
+      if (volIds.has(parentIdx[Number(chId)])) { delete parentIdx[Number(chId)]; idxDirty = true }
+    }
+    if (idxDirty) await saveChapterParentIndex(parentIdx)
     // 清理作品目录（volumes.json 等）
     await remove(`${DATA_DIR}/works/${id}`, { baseDir: BaseDirectory.AppData, recursive: true }).catch(() => {})
     // 从索引中移除
@@ -178,6 +185,15 @@ export function deleteVolume(id: number) {
       if (vols?.[id]) {
         delete vols[id]
         await writeJson(`${DATA_DIR}/works/${work.id}/volumes.json`, vols)
+        // 清理关联的章节文件
+        await remove(`${DATA_DIR}/chapters/${id}.json`, { baseDir: BaseDirectory.AppData }).catch(() => {})
+        // 清理 _chapterParentIndex 中属于该卷的章节条目
+        const parentIdx = await loadChapterParentIndex()
+        let dirty = false
+        for (const [chId, volId] of Object.entries(parentIdx)) {
+          if (volId === id) { delete parentIdx[Number(chId)]; dirty = true }
+        }
+        if (dirty) await saveChapterParentIndex(parentIdx)
         return
       }
     }

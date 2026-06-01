@@ -1074,7 +1074,15 @@ async function manualSave() {
 
 onUnmounted(() => {
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
-  if (changedSinceLastSave) doSave().catch(e => console.error('ChapterEditor unmount save failed:', e))
+  if (changedSinceLastSave) {
+    // 紧急同步备份到 localStorage，防止页面关闭/切换时异步保存丢失
+    try {
+      const wid = tauri ? store?.currentWorkId : localCurrentWorkId.value
+      const cid = chapter.value?.id
+      if (wid && cid) localStorage.setItem(`ns:backup:ch:${wid}:${cid}`, bodyContent.value)
+    } catch {}
+    doSave().catch(e => console.error('ChapterEditor unmount save failed:', e))
+  }
 })
 
 async function saveTitle() {

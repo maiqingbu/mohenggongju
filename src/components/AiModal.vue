@@ -998,8 +998,9 @@ async function resolveContextInjection(): Promise<string> {
             const wid = store?.currentWorkId ?? repo.currentWorkId.value
             if (wid) {
               const raw = localStorage.getItem('ns:settings:w' + wid)
-              const settings: any[] = raw ? JSON.parse(raw) : []
-              const fores = settings.filter((s: any) => s.type === 'foreshadowing')
+              const data: { entities?: any[] } = raw ? JSON.parse(raw) : {}
+              const all: any[] = data.entities || []
+              const fores = all.filter((s: any) => s.type === 'foreshadowing')
               if (fores.length > 0) {
                 const hooks: HookEntry[] = fores.map((f: any, i: number) => ({
                   hookId: f.id || `hook-${i}`,

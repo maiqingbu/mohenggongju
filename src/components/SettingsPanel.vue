@@ -543,7 +543,8 @@ function enrichStructuredData(raw: Record<string, unknown>, entityType: SettingE
     if (!data.category || data.category === '') {
       data.category = '配角'
     } else {
-      const normCat = CHAR_CATEGORY_MAP[data.category] || (typeof data.category === 'string' ? CHAR_CATEGORY_MAP[data.category.toLowerCase()] : undefined)
+      const cat = String(data.category)
+      const normCat = CHAR_CATEGORY_MAP[cat] || CHAR_CATEGORY_MAP[cat.toLowerCase()]
       if (normCat) data.category = normCat
     }
     // 确保数组字段是数组
@@ -562,7 +563,8 @@ function enrichStructuredData(raw: Record<string, unknown>, entityType: SettingE
     if (!data.category || data.category === '') {
       data.category = '其他'
     } else {
-      const normCat = WS_CATEGORY_MAP[data.category] || (typeof data.category === 'string' ? WS_CATEGORY_MAP[data.category.toLowerCase()] : undefined)
+      const cat = String(data.category)
+      const normCat = WS_CATEGORY_MAP[cat] || WS_CATEGORY_MAP[cat.toLowerCase()]
       if (normCat) data.category = normCat
     }
     if (!Array.isArray(data.rules)) data.rules = typeof data.rules === 'string' ? (data.rules as string).split(/[,，、;；]\s*/).filter(Boolean) : []

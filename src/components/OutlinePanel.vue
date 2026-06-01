@@ -541,7 +541,18 @@ watch(structuredForm, () => {
 
 onUnmounted(() => {
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
-  if (saveStatus.value === 'unsaved') doSave().catch(e => console.error('OutlinePanel unmount save failed:', e))
+  if (saveStatus.value === 'unsaved') {
+    // 紧急同步备份到 localStorage，防止页面关闭/切换时异步保存丢失
+    try {
+      const wid = repo.currentWorkId.value
+      const type = selectedType.value
+      const sid = selectedId.value
+      if (wid && type && sid != null) {
+        localStorage.setItem(`ns:backup:outline:${wid}:${type}:${sid}`, localContent.value)
+      }
+    } catch {}
+    doSave().catch(e => console.error('OutlinePanel unmount save failed:', e))
+  }
 })
 
 async function doSave() {
