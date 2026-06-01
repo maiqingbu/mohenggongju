@@ -165,7 +165,7 @@ describe('createParagraphFixAgent', () => {
 
   it('localExecute finds content by pattern when contentKey is empty', async () => {
     const ctx = {
-      'step:compress_expand_1': '他看了看。\n\n又看了看。\n\n然后走了。',
+      'step:length_normalizer_1': '他看了看。\n\n又看了看。\n\n然后走了。',
     }
     const inputs: Record<string, string> = {}
 

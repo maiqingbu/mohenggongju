@@ -1,10 +1,10 @@
 /**
- * 段落修复 Agent — 第1.5层防御（介于 compress_expand 和 style_review 之间）
+ * 段落修复 Agent — 第1.5层防御（介于 length_normalizer 和 style_review 之间）
  *
  * localExecute 实现规则引擎段落合并（零 token 成本）：
  * 检测相邻的、非对话的单句段，自动合并为多句段落。
  *
- * 插入位置：compress_expand_N 之后、style_review_N 之前
+ * 插入位置：length_normalizer_N 之后、style_review_N 之前
  * 阻塞策略：approval='auto'（自动修复），skippable=true
  */
 import type { AgentSpec } from '../types'
@@ -163,13 +163,13 @@ export function createParagraphFixAgent(): AgentSpec {
     /**
      * localExecute：规则引擎段落合并（零 token 成本）
      *
-     * 从 ctx 中读取 compress_expand_N 或 gen_body_N 的正文，
+     * 从 ctx 中读取 length_normalizer_N 或 gen_body_N 的正文，
      * 检测并合并相邻的非对话单句段。
      * 返回合并后的纯文本（由 runner 存入 ctx）。
      */
     async localExecute(inputs: Record<string, string>, ctx: Record<string, unknown>) {
       const contentKey = inputs.contentKey ||
-        Object.keys(ctx).find(k => k.includes('compress_expand_') || k.includes('gen_body_')) || ''
+        Object.keys(ctx).find(k => k.includes('length_normalizer_') || k.includes('gen_body_')) || ''
       const content = String(ctx[contentKey] || '')
 
       if (!content) return '' // 空内容直接透传

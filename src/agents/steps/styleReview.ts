@@ -5,7 +5,7 @@
  * 11 区自查（段落结构/POV/展示vs讲述/对话质量/节奏密度/用词句式/
  * 表情重复/情绪标签/无用细节/伏笔回收/填充检测）。
  *
- * 插入位置：每个 gen_body_N 之后（length_check + compress_expand 之后）
+ * 插入位置：每个 gen_body_N 之后（length_check + length_normalizer 之后）
  * 阻塞策略：approval='on_warning'，skippable=true
  * token 成本：约 1-2k tokens/章
  */

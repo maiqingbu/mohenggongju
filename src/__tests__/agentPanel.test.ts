@@ -136,7 +136,6 @@ vi.mock('../agents/steps/commitWrite', () => ({ createCommitWriteAgent: () => ({
 vi.mock('../agents/steps/extractSettings', () => ({ createExtractSettingsAgent: () => ({ ...makeMockAgent(), id: 'extract_settings', name: '设定数据更新' }) }))
 vi.mock('../agents/steps/styleReview', () => ({ createStyleReviewAgent: () => ({ ...makeMockAgent(), id: 'style_review', name: '文风审查' }) }))
 vi.mock('../agents/steps/lengthCheck', () => ({ createLengthCheckAgent: () => ({ ...makeMockAgent(), id: 'length_check', name: '长度检测' }) }))
-vi.mock('../agents/steps/compressExpand', () => ({ createCompressExpandAgent: () => ({ ...makeMockAgent(), id: 'compress_expand', name: '字数调整' }) }))
 vi.mock('../agents/steps/paragraphFix', () => ({ createParagraphFixAgent: () => ({ ...makeMockAgent(), id: 'paragraph_fix', name: '段落修复' }) }))
 vi.mock('../agents/workflows/continueChapter', () => ({ buildContinueChapterWorkflow: vi.fn().mockReturnValue([]) }))
 

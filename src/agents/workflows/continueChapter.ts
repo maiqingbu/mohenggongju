@@ -194,7 +194,7 @@ export function buildContinueChapterWorkflow(config: ContinueChapterConfig): Wor
     },
     approval: 'on_warning',
     skippable: true,
-    next: autoExtract ? 'commit_write' : 'extract_settings',
+    next: autoExtract ? 'foreshadow' : 'extract_settings',
   })
 
   // 非全自动模式：最后统一提取设定
@@ -208,9 +208,22 @@ export function buildContinueChapterWorkflow(config: ContinueChapterConfig): Wor
       },
       approval: 'on_warning',
       skippable: true,
-      next: 'commit_write',
+      next: 'foreshadow',
     })
   }
+
+  // 伏笔分析：检测本章伏笔状态并更新账本
+  steps.push({
+    id: 'foreshadow',
+    agentId: 'foreshadow',
+    inputs: {
+      chapterNumber: String(config.startChapterNo + config.chapterCount - 1),
+      chapterRange: `${config.startChapterNo}-${config.startChapterNo + config.chapterCount - 1}`,
+    },
+    approval: 'auto',
+    skippable: true,
+    next: 'commit_write',
+  })
 
   // 终端落盘
   steps.push({

@@ -4,7 +4,7 @@
  * 从 gen_body_N 产出中统计中文字数，与目标字数比较，
  * 计算偏差并决定是否需要压缩/扩展。
  *
- * approval: 'auto'（不阻塞流程，由 compress_expand step 处理）
+ * approval: 'auto'（不阻塞流程，由 length_normalizer step 处理）
  * skippable: true
  */
 import type { AgentSpec } from '../types'

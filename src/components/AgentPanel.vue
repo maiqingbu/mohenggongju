@@ -631,13 +631,10 @@ import { createParagraphFixAgent } from '../agents/steps/paragraphFix'
 import { createVolumeBoundaryCheckAgent } from '../agents/steps/volumeBoundaryCheck'
 import { createLengthNormalizerAgent } from '../agents/steps/lengthNormalizer'
 import { createReviserAgent } from '../agents/steps/reviser'
-import { createSettingDetectorAgent } from '../agents/steps/settingDetectorAgent'
-import { createInfoDetectorAgent } from '../agents/steps/infoDetectorAgent'
-import { createOutlineDetectorAgent } from '../agents/steps/outlineDetectorAgent'
-import { createPreflightCheckAgent } from '../agents/steps/preflightCheckAgent'
 import { ideaAgent } from '../agents/idea'
 import { settingAgent } from '../agents/setting'
 import { characterAgent } from '../agents/character'
+import { foreshadowAgent } from '../agents/foreshadow'
 import { buildContinueChapterWorkflow } from '../agents/workflows/continueChapter'
 import { playNotifySound, playClickSound } from '../composables/useEditorSettings'
 import { findAwaitingRuns, getRun, updateRun, type WorkflowRunRecord } from '../agents/persistence'
@@ -670,16 +667,12 @@ runner.registerAgents([
   ideaAgent,
   settingAgent,
   characterAgent,
-  createSettingDetectorAgent(),
-  createInfoDetectorAgent(),
+  foreshadowAgent,
   // 大纲阶段
   outlineAgent,
   chapterAgent,
-  createOutlineDetectorAgent(),
   // 创作阶段
   bodyAgent,
-  // 续写前置检测
-  createPreflightCheckAgent(),
   // 质量保障
   createConsistencyCheckAgent(),
   createCommitWriteAgent(),
@@ -1102,8 +1095,25 @@ async function startWorkflow(chapterCount: number) {
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
   })
 
-  // 清空上次累积（G6）
-  runner.setContext({ workId: workId as number, chapterIds: newChapterIds, _pendingWrites: [] })
+  // 清空上次累积（G6）+ 注入伏笔上下文（B-2）
+  let _hooks: Array<{ hookId: string; name: string; type: string; status: string; startChapter: number; lastAdvancedChapter: number; expectedPayoff: string; notes: string; advancedCount: number }> = []
+  try {
+    await _settingsMgr.load(workId as number)
+    const foreshadowings = _settingsMgr.listByType('foreshadowing')
+    const statusMap: Record<string, string> = { '已埋': 'open', '已触发': 'progressing', '已回收': 'resolved', '延后': 'deferred' }
+    _hooks = foreshadowings.map((f: any) => ({
+      hookId: String(f.id),
+      name: f.name || '',
+      type: (f.structuredData?.tags as string) || 'mystery',
+      status: (statusMap[f.structuredData?.status as string] || 'open') as string,
+      startChapter: (f.chapterNo as number) || 1,
+      lastAdvancedChapter: (f.chapterNo as number) || 1,
+      expectedPayoff: (f.structuredData?.expectedChapter as string) || '',
+      notes: (f.summary as string) || '',
+      advancedCount: 0,
+    }))
+  } catch { /* _settingsMgr 不可用，_hooks 保持空数组 */ }
+  runner.setContext({ workId: workId as number, chapterIds: newChapterIds, _pendingWrites: [], _hooks })
 
   // 构建上下文解析器（供 agent 步骤的 requiredContext 使用）
   runner.setResolverCtx(await buildResolverCtx(workId as number))
@@ -1125,7 +1135,7 @@ async function startWorkflow(chapterCount: number) {
         if (autoClean.value) {
           enhanced.push({
             id: `clean_${s.id}`, agentId: 'body',
-            inputs: { ...s.inputs, action: 'unmark', content: '@ctx.lastOutput' },
+            inputs: { ...s.inputs, action: 'unmark', content: autoReview.value ? `@ctx.step:${s.id}` : '@ctx.lastOutput' },
             approval: 'on_warning', skippable: true,
             next: s.next,
           })

@@ -7,7 +7,6 @@ import { createCommitWriteAgent } from '../agents/steps/commitWrite'
 import { createExtractSettingsAgent } from '../agents/steps/extractSettings'
 import { createStyleReviewAgent } from '../agents/steps/styleReview'
 import { createLengthCheckAgent } from '../agents/steps/lengthCheck'
-import { createCompressExpandAgent } from '../agents/steps/compressExpand'
 import { createLengthNormalizerAgent } from '../agents/steps/lengthNormalizer'
 import { createReviserAgent } from '../agents/steps/reviser'
 import { createParagraphFixAgent } from '../agents/steps/paragraphFix'
@@ -41,8 +40,8 @@ function fakeAgent(id: string, name: string, output: string): AgentSpec {
 describe('buildContinueChapterWorkflow', () => {
   it('generates correct step count for 3 chapters', () => {
     const steps = buildContinueChapterWorkflow({ chapterCount: 3, startChapterNo: 4, wordsPerChapter: 2000 })
-    // load_context + 3×(gen_body + length_check + length_normalizer + paragraph_fix + style_review + reviser) + consistency_check + extract_settings + commit_write = 6×3 + 4 = 22
-    expect(steps).toHaveLength(22)
+    // load_context + 3×(gen_body + length_check + length_normalizer + paragraph_fix + style_review + reviser) + consistency_check + extract_settings + foreshadow + commit_write = 6×3 + 5 = 23
+    expect(steps).toHaveLength(23)
     expect(steps[0].id).toBe('load_context')
     expect(steps[0].approval).toBe('auto')
 
@@ -104,15 +103,22 @@ describe('buildContinueChapterWorkflow', () => {
     expect(steps[19].approval).toBe('on_warning')
     expect(steps[19].next).toBe('extract_settings')
 
-    // extract_settings → commit_write
+    // extract_settings → foreshadow
     expect(steps[20].id).toBe('extract_settings')
     expect(steps[20].approval).toBe('on_warning')
-    expect(steps[20].next).toBe('commit_write')
+    expect(steps[20].next).toBe('foreshadow')
+
+    // foreshadow → commit_write
+    expect(steps[21].id).toBe('foreshadow')
+    expect(steps[21].agentId).toBe('foreshadow')
+    expect(steps[21].approval).toBe('auto')
+    expect(steps[21].skippable).toBe(true)
+    expect(steps[21].next).toBe('commit_write')
 
     // commit_write terminal
-    expect(steps[21].id).toBe('commit_write')
-    expect(steps[21].approval).toBe('always')
-    expect(steps[21].skippable).toBe(false)
+    expect(steps[22].id).toBe('commit_write')
+    expect(steps[22].approval).toBe('always')
+    expect(steps[22].skippable).toBe(false)
   })
 
   it('all gen_body steps have approval=always', () => {
@@ -128,12 +134,12 @@ describe('buildContinueChapterWorkflow', () => {
     expect(commit!.skippable).toBe(false)
   })
 
-  it('extract_settings is inserted between consistency_check and commit_write', () => {
+  it('extract_settings is inserted between consistency_check and foreshadow', () => {
     const steps = buildContinueChapterWorkflow({ chapterCount: 1, startChapterNo: 1, wordsPerChapter: 2000 })
     const idx = steps.findIndex(s => s.id === 'extract_settings')
     expect(idx).toBeGreaterThan(0)
     expect(steps[idx - 1].id).toBe('consistency_check')
-    expect(steps[idx].next).toBe('commit_write')
+    expect(steps[idx].next).toBe('foreshadow')
   })
 })
 
@@ -143,6 +149,7 @@ describe('continueChapter workflow e2e (auto mode)', () => {
     runner.registerAgents([
       fakeAgent('chapter', '章纲规划', '{"plan":"chapter plan"}'),
       fakeAgent('body', '正文生成', '{"content":"第一章正文"}'),
+      fakeAgent('foreshadow', '伏笔分析', '{"hookLedger":{},"healthIssues":[],"stats":{},"summary":"无伏笔变更"}'),
       createLengthCheckAgent(),
       createLengthNormalizerAgent(),
       createParagraphFixAgent(),
@@ -174,7 +181,7 @@ describe('continueChapter workflow e2e (auto mode)', () => {
 
     expect(doneEmitted).toBe(true)
     expect(runner.status).toBe('done')
-    // History: 10 steps (load_context + gen_body_1 + length_check_1 + length_normalizer_1 + paragraph_fix_1 + style_review_1 + reviser_1 + consistency_check + extract_settings + commit_write)
+    // History: 11 steps (load_context + gen_body_1 + length_check_1 + length_normalizer_1 + paragraph_fix_1 + style_review_1 + reviser_1 + consistency_check + extract_settings + foreshadow + commit_write)
     const historyIds = runner.history.map(h => h.stepId)
     expect(historyIds).toContain('load_context')
     expect(historyIds).toContain('gen_body_1')
@@ -185,8 +192,9 @@ describe('continueChapter workflow e2e (auto mode)', () => {
     expect(historyIds).toContain('reviser_1')
     expect(historyIds).toContain('consistency_check')
     expect(historyIds).toContain('extract_settings')
+    expect(historyIds).toContain('foreshadow')
     expect(historyIds).toContain('commit_write')
-    expect(runner.history).toHaveLength(10)
+    expect(runner.history).toHaveLength(11)
   })
 })
 
@@ -196,6 +204,7 @@ describe('continueChapter workflow e2e (approval mode)', () => {
     runner.registerAgents([
       fakeAgent('chapter', '章纲规划', '{"plan":"chapter plan"}'),
       fakeAgent('body', '正文生成', '{"content":"第一章正文"}'),
+      fakeAgent('foreshadow', '伏笔分析', '{"hookLedger":{},"healthIssues":[],"stats":{},"summary":"无伏笔变更"}'),
       createLengthCheckAgent(),
       createLengthNormalizerAgent(),
       createParagraphFixAgent(),

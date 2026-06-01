@@ -48,7 +48,7 @@ export function createCommitWriteAgent(): AgentSpec {
         const write = mapToPendingWrite(pw)
         if (!write) continue
         // 注入 workId 供 outline 持久化使用
-        if (write.type === 'chapter_plan' || write.type === 'outline') {
+        if (write.type === 'chapter_plan' || write.type === 'outline' || write.type === 'foreshadow') {
           write.data._workId = workId
         }
         const snap = await snapshotBefore(write)
@@ -105,6 +105,16 @@ async function snapshotBefore(write: PendingWrite): Promise<string | null> {
         return existing?.content || null
       } catch { return null }
     }
+    case 'foreshadow': {
+      try {
+        const workId = (write.data._workId as number) || 0
+        if (!workId) return null
+        const { SettingsManager } = await import('../../composables/useSettings')
+        const sm = new SettingsManager()
+        await sm.load(workId)
+        return JSON.stringify(sm.listByType('foreshadowing'))
+      } catch { return null }
+    }
     default:
       return null
   }
@@ -142,6 +152,35 @@ async function rollbackWrite(write: PendingWrite, snapshot: string | null): Prom
         // snapshot === null 表示之前没有大纲，不回滚（保留新内容）
       } catch (e) {
         console.error(`[commitWrite] 回滚大纲 ${write.type} 失败:`, e)
+      }
+      break
+    }
+    case 'foreshadow': {
+      try {
+        const workId = (write.data._workId as number) || 0
+        if (!workId) return
+        const { SettingsManager } = await import('../../composables/useSettings')
+        const sm = new SettingsManager()
+        await sm.load(workId)
+        // 先清除当前所有 foreshadowing 实体
+        const current = sm.listByType('foreshadowing')
+        for (const e of current) await sm.remove(e.id)
+        // snapshot === null 表示本轮新增（之前没有伏笔实体），清除后不恢复
+        if (snapshot !== null) {
+          const snapEntities: Array<Record<string, unknown>> = JSON.parse(snapshot)
+          for (const se of snapEntities) {
+            await sm.add({
+              type: 'foreshadowing',
+              name: se.name as string,
+              summary: (se.summary as string) || '',
+              structuredData: se.structuredData as Record<string, unknown> || {},
+              source: (se.source as any) || 'manual',
+            })
+          }
+        }
+        await sm.flush()
+      } catch (e) {
+        console.error(`[commitWrite] 回滚 foreshadow 失败:`, e)
       }
       break
     }
@@ -184,6 +223,11 @@ function mapToPendingWrite(pw: {
   // extract_settings → 设定变更
   if (pw.agentId === 'extract_settings' && data.diffs) {
     return { type: 'setting', target: 0, data }
+  }
+
+  // foreshadow → 伏笔账本
+  if (pw.agentId === 'foreshadow') {
+    return { type: 'foreshadow', target: 0, data: { hookLedger: data.hookLedger, healthIssues: data.healthIssues, stats: data.stats, summary: data.summary } }
   }
 
   return null
@@ -236,9 +280,40 @@ async function executeWrite(write: PendingWrite): Promise<void> {
     case 'setting':
       // extractSettings agent 自行持久化设定变更，commitWrite 不重复写入
       break
-    case 'foreshadow':
-      console.warn('[commitWrite] foreshadow 写入路径暂未实现，数据未落盘', write.data)
+    case 'foreshadow': {
+      const ledger = (write.data.hookLedger || {}) as { open?: string[]; advance?: string[]; resolve?: string[]; defer?: string[] }
+      const workId = (write.data._workId as number) || 0
+      if (!workId || (!ledger.open?.length && !ledger.advance?.length && !ledger.resolve?.length && !ledger.defer?.length)) break
+
+      const { SettingsManager } = await import('../../composables/useSettings')
+      const sm = new SettingsManager()
+      await sm.load(workId)
+      const existing = sm.listByType('foreshadowing')
+      const findByName = (name: string) => existing.find((e: any) => e.name === name)
+
+      for (const name of (ledger.open || [])) {
+        if (!findByName(name)) {
+          await sm.add({ type: 'foreshadowing', name, summary: name, structuredData: { status: '已埋' }, source: 'ai_extraction' })
+        }
+      }
+      for (const name of (ledger.advance || [])) {
+        const e = findByName(name)
+        if (e) { await sm.update(e.id, { structuredData: { ...(e.structuredData || {}), status: '已触发' } }) }
+        else { console.warn(`[commitWrite] foreshadow advance 未匹配实体: "${name}"`) }
+      }
+      for (const name of (ledger.resolve || [])) {
+        const e = findByName(name)
+        if (e) { await sm.update(e.id, { structuredData: { ...(e.structuredData || {}), status: '已回收' } }) }
+        else { console.warn(`[commitWrite] foreshadow resolve 未匹配实体: "${name}"`) }
+      }
+      for (const name of (ledger.defer || [])) {
+        const e = findByName(name)
+        if (e) { await sm.update(e.id, { structuredData: { ...(e.structuredData || {}), status: '延后' } }) }
+        else { console.warn(`[commitWrite] foreshadow defer 未匹配实体: "${name}"`) }
+      }
+      await sm.flush()
       break
+    }
   }
 }
 
