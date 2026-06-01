@@ -267,6 +267,80 @@ function textSimilarity(a: string, b: string): number {
   return overlap / Math.max(setA.size, setB.size)
 }
 
+/** Jaccard 相似度（2-gram 片断）—— 比字符集重叠更精准 */
+export function jaccardSimilarity(a: string, b: string): number {
+  if (!a || !b) return 0
+  const setA = new Set<string>()
+  const setB = new Set<string>()
+  for (let i = 0; i < a.length - 1; i++) setA.add(a.slice(i, i + 2))
+  for (let i = 0; i < b.length - 1; i++) setB.add(b.slice(i, i + 2))
+  const intersection = new Set([...setA].filter(x => setB.has(x)))
+  const union = new Set([...setA, ...setB])
+  return union.size > 0 ? intersection.size / union.size : 0
+}
+
+// ── 段落形状分析（InkOS paragraph shape 移植）──
+
+export interface ParagraphShape {
+  totalParagraphs: number
+  shortCount: number
+  shortRatio: number
+  avgLength: number
+  maxConsecutiveShort: number
+}
+
+export function analyzeParagraphShape(content: string, shortThreshold = 30): ParagraphShape {
+  const paragraphs = content.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0)
+  const shortParagraphs = paragraphs.filter(p => p.length < shortThreshold)
+  const totalLen = paragraphs.reduce((sum, p) => sum + p.length, 0)
+  const avgLength = paragraphs.length > 0 ? Math.round(totalLen / paragraphs.length) : 0
+  let maxConsecutiveShort = 0
+  let cur = 0
+  for (const p of paragraphs) {
+    if (p.length < shortThreshold) { cur++; maxConsecutiveShort = Math.max(maxConsecutiveShort, cur) }
+    else { cur = 0 }
+  }
+  return {
+    totalParagraphs: paragraphs.length,
+    shortCount: shortParagraphs.length,
+    shortRatio: paragraphs.length > 0 ? shortParagraphs.length / paragraphs.length : 0,
+    avgLength,
+    maxConsecutiveShort,
+  }
+}
+
+/** 段落形状问题检测 */
+export function detectParagraphShapeIssues(content: string): ValidationIssue[] {
+  const shape = analyzeParagraphShape(content)
+  const issues: ValidationIssue[] = []
+  if (shape.shortRatio > 0.25) {
+    issues.push({
+      severity: shape.shortRatio > 0.4 ? 'error' : 'warning',
+      rule: '单句段占比',
+      description: `单句段占比 ${(shape.shortRatio * 100).toFixed(0)}%（${shape.shortCount}/${shape.totalParagraphs}），超过 25% 上限`,
+      suggestion: '合并相邻单句段为 2-5 句的完整段落',
+    })
+  }
+  if (shape.maxConsecutiveShort >= 4) {
+    issues.push({
+      severity: 'warning',
+      rule: '连续短段落',
+      description: `连续 ${shape.maxConsecutiveShort} 个短段落，读者节奏感断裂`,
+      suggestion: '在连续短段落间插入 1-2 个正常长度段落',
+    })
+  }
+  return issues
+}
+
+/** 后处理：剥离元数据行、标准化标点 */
+export function normalizePostWriteSurface(content: string): string {
+  return content
+    .replace(/^\s*\[(?:polisher|writer|reviser|reviewer|润色|写作|修订|审稿)-note\].*(\n|$)/gmi, '')
+    .replace(/^=== [A-Z_]+ ===\s*$/gm, '')
+    .replace(/——+/g, '——')
+    .trim()
+}
+
 // ============================================================
 // 工具导出
 // ============================================================
