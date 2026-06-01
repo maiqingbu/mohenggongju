@@ -67,11 +67,12 @@ export const useWorkStore = defineStore('work', () => {
 
   async function selectWork(workId: number) {
     currentWorkId.value = workId
+    currentChapterId.value = null
     await loadVolumes(workId)
   }
 
   async function addVolume(workId: number, title: string) {
-    const maxOrder = volumes.value.length
+    const maxOrder = Math.max(...volumes.value.map(v => v.sort_order), -1) + 1
     const id = await createVolume(workId, title, maxOrder)
     await loadVolumes(workId)
     return id

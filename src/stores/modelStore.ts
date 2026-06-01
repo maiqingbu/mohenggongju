@@ -42,6 +42,7 @@ export interface CustomProvider {
   modelId: string
   supportsThink: boolean
   contextLength: number
+  maxOutputTokens?: number
   enabled: boolean
 }
 
@@ -177,6 +178,16 @@ export const useModelStore = defineStore('model', () => {
   const globalDefaultProviderId = ref<string | null>(null)
   const globalDefaultModelId = ref<string | null>(null)
 
+  // 恢复全局默认模型设置
+  try {
+    const raw = storage.get('ns:global_default_model')
+    if (raw) {
+      const saved = JSON.parse(raw) as { providerId: string; modelId: string }
+      globalDefaultProviderId.value = saved.providerId
+      globalDefaultModelId.value = saved.modelId
+    }
+  } catch {}
+
   // ── 采样参数（用户自定义，按 provider 存储）──
   const samplingOverrides = ref<Record<string, SamplingParams>>(loadSamplingOverrides())
 
@@ -298,6 +309,7 @@ export const useModelStore = defineStore('model', () => {
   function setGlobalDefault(providerId: string, modelId: string) {
     globalDefaultProviderId.value = providerId
     globalDefaultModelId.value = modelId
+    storage.set('ns:global_default_model', JSON.stringify({ providerId, modelId }))
   }
 
   // ── 自定义模型操作 ──
@@ -363,7 +375,7 @@ export const useModelStore = defineStore('model', () => {
         modelInfo: {
           id: cp.modelId, name: cp.name,
           supportsThink: cp.supportsThink, contextLength: cp.contextLength,
-          maxOutputTokens: 8192, pricing: { inputPerKTokens: 0, outputPerKTokens: 0 },
+          maxOutputTokens: cp.maxOutputTokens || 8192, pricing: { inputPerKTokens: 0, outputPerKTokens: 0 },
         },
       }
     }

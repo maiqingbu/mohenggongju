@@ -152,7 +152,12 @@ export class WorkflowRunner {
         this.bus.emit('step:done', step, output)
 
         // 检查是否应阻塞
-        const parsed = agent.parseOutput(output)
+        let parsed: Record<string, unknown>
+        try {
+          parsed = agent.parseOutput(output)
+        } catch (e: any) {
+          throw new Error(`parseOutput 失败 (步骤: ${step.id}, Agent: ${agent.id}): ${(e as Error).message || String(e)}`)
+        }
         const warnings = (parsed.warnings || []) as ConsistencyIssue[]
         const errors = warnings.filter(w => w.level === 'ERROR')
 
@@ -345,7 +350,7 @@ export class WorkflowRunner {
       if (ref.startsWith('@ctx.')) {
         const resolved = this._ctx[ref.slice(5)]
         if (resolved === undefined || resolved === null) {
-          console.warn(`[runner] 步骤 ${step.id} 输入 "${key}" 引用未解析: ${ref}，已跳过`)
+          this.bus.emit('step:warning', step.id, `输入 "${key}" 引用未解析: ${ref}`)
           continue
         }
         parts.push(`${key}: ${JSON.stringify(resolved)}`)
@@ -460,8 +465,7 @@ export class WorkflowRunner {
       await agent.writeBack(parsed, { ...this._ctx })
       this.bus.emit('step:writeBack', step.id, parsed)
     } catch (e: any) {
-      this.bus.emit('run:failed', new Error(`writeBack 失败 (${step.id}): ${e.message}`))
-      throw e  // G2: 重新抛出，让外层 run() 的 try/catch 接住停止循环
+      throw new Error(`writeBack 失败 (${step.id}): ${(e as Error).message || String(e)}`)
     }
   }
 
@@ -562,7 +566,7 @@ export class WorkflowRunner {
       while (keepRedoing) {
         this.bus.emit('step:start', step)
         try {
-          const reOutput = await this.executeStep(agent, step)
+          const reOutput = await this.executeStepWithRetry(agent, step)
           this._history.push({ stepId: step.id, output: reOutput, timestamp: Date.now() })
           this._ctx[`step:${step.id}`] = reOutput
           this._ctx.lastOutput = reOutput

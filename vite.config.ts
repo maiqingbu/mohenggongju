@@ -27,7 +27,7 @@ export default defineConfig({
     },
   },
   test: {
-    environment: 'node',
+    environment: 'jsdom',
     include: ['src/__tests__/**/*.test.ts', 'src/__tests__/**/*.scenario.ts'],
     exclude: ['src/__tests__/e2e/**'],
   },

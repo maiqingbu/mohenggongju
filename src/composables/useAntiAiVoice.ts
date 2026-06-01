@@ -464,6 +464,9 @@ const CATEGORY_LABELS: Record<FatigueCategory, string> = {
 export function scanFatigueWords(text: string): FatigueWordHit[] {
   const hits: FatigueWordHit[] = []
 
+  // 归一化省略号变体（... 和 … → ……），使模式库中的 …… 能匹配所有变体
+  text = text.replace(/\.{3,}/g, '……').replace(/…/g, '……')
+
   for (const [catKey, entry] of Object.entries(FATIGUE_WORD_LIBRARY) as [FatigueCategory, FatigueWordEntry][]) {
     for (const word of entry.words) {
       // 用简单匹配计数

@@ -35,7 +35,19 @@ const data = loadData()
 export const localWorks = ref<Work[]>(data.works)
 export const localVolumes = ref<Volume[]>(data.volumes)
 export const localChapterMap = ref<Record<number, Chapter[]>>(data.chapters)
-export const localDbReady = ref(true)
+// 检测 localStorage 是否可用（隐私模式可能禁用）
+function checkLocalStorageAvailable(): boolean {
+  try {
+    const key = '__ls_test__'
+    localStorage.setItem(key, '1')
+    localStorage.removeItem(key)
+    return true
+  } catch {
+    return false
+  }
+}
+
+export const localDbReady = ref(checkLocalStorageAvailable())
 // 页面刷新时从 localStorage 恢复上次选中的作品
 function restoreCurrentWorkId(): number | null {
   try {
@@ -102,7 +114,7 @@ export async function localAddVolume(workId: number, title: string): Promise<num
   const id = nextId()
   const sortOrder = localVolumes.value.filter(v => v.work_id === workId).length
   localVolumes.value.push({ id, work_id: workId, title, sort_order: sortOrder })
-  localChapterMap.value[id] = []
+  if (!localChapterMap.value[id]) localChapterMap.value[id] = []
   persist()
   return id
 }

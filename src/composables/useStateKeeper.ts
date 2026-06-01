@@ -56,9 +56,10 @@ export function extractCharacterState(
   }
 
   // 重要度 Rank — 基于出场频次和关键词
-  const mentions = (allText.match(new RegExp(characterName, 'g')) || []).length
+  const escaped = characterName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const mentions = (allText.match(new RegExp(escaped, 'g')) || []).length
   const chaptersAppeared = chapterContents.filter(c => c.content.includes(characterName)).length
-  const importance = Math.max(1, Math.min(10, Math.round(mentions / 5 + chaptersAppeared)))
+  const importance = Math.min(10, Math.round(mentions / 5 + chaptersAppeared))
 
   // 关键词邻近检测：仅在角色名附近 200 字符内出现的关键词才计入
   const windowSize = 200

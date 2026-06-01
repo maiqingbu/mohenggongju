@@ -55,8 +55,16 @@ export const foreshadowAgent: AgentSpec = {
     const healthIssues = analyzeHookHealth(hooks, currentChapter)
     const stats = getHookStats(hooks)
 
+    // 根据当前伏笔状态构建分类账本，避免空账本覆盖已有数据
+    const ledger: HookLedger = {
+      open: hooks.filter(h => h.status === 'open').map(h => h.name),
+      advance: hooks.filter(h => h.status === 'progressing').map(h => h.name),
+      resolve: [],
+      defer: hooks.filter(h => h.status === 'deferred').map(h => h.name),
+    }
+
     return JSON.stringify({
-      hookLedger: { open: [], advance: [], resolve: [], defer: [] },
+      hookLedger: ledger,
       healthIssues,
       stats,
       summary: healthIssues.length > 0
