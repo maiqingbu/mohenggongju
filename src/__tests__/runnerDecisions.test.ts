@@ -160,7 +160,7 @@ describe('@ctx.* 变量解析', () => {
       return 'step output ' + stepCounter
     })
 
-    const step1 = makeStep({ id: 'load_context', agentId: 'agent1', approval: 'auto', inputs: {} })
+    const step1 = makeStep({ id: 'load_context', agentId: 'agent1', approval: 'auto', inputs: {}, next: 'gen_body' })
     // 直接构造 step2，避免 makeStep 默认 inputs 覆盖问题
     const step2: WorkflowStep = {
       id: 'gen_body', agentId: 'agent2', approval: 'auto',

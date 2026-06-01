@@ -58,8 +58,8 @@ function fallbackExtractTitle(raw: string, chapterNumber?: number): string {
 function fallbackExtractContent(raw: string): string {
   // 去掉开头的标题行
   let content = raw.replace(/^#{1,3}\s*第\d+章[^\n]*\n+/, '').trim()
-  // 去掉末尾的自检段（如果存在）
-  const selfCheckIdx = content.search(/\n---\n/)
+  // 去掉末尾的自检段 — 仅当 --- 之后紧跟检查清单特征（避免误截场景分隔符）
+  const selfCheckIdx = content.search(/\n---\n\s*(\[[ x✓✔✗]\]|(?:#+\s*)?(?:自查|自检|检查清单|输出前|本章.?自))/)
   if (selfCheckIdx >= 0) {
     content = content.slice(0, selfCheckIdx).trim()
   }
@@ -100,7 +100,15 @@ export function parseMultiChapterOutput(
 ): MultiChapterOutput {
   const globalNote = extractTag(raw, 'GLOBAL_NOTE')
 
-  // 尝试按 === CHAPTER_CONTENT === 提取多章
+  // 用所有 CHAPTER_TITLE 标记分割章节，然后逐章调用 parseCreativeOutput
+  // 这比 extractMultiTag(content) 更准确，因为每章的 title+selfCheck 在 content 标记之外
+  const chapterStarts = splitByChapterTitle(raw)
+  if (chapterStarts.length > 1) {
+    const chapters = chapterStarts.map((part, i) => parseCreativeOutput(part, i + 1, countingMode))
+    return { chapters, globalNote }
+  }
+
+  // Fallback：尝试按 === CHAPTER_CONTENT === 提取多章
   const contentBlocks = extractMultiTag(raw, 'CHAPTER_CONTENT')
   if (contentBlocks.length > 0) {
     const chapters = contentBlocks.map((block, i) => {
@@ -128,6 +136,21 @@ export function parseMultiChapterOutput(
   })
 
   return { chapters, globalNote }
+}
+
+/** 按 === CHAPTER_TITLE === 标记切分多章原始文本 */
+function splitByChapterTitle(raw: string): string[] {
+  // 在 === CHAPTER_TITLE === 之前切开，保留标记本身
+  const parts = raw.split(/(?==== CHAPTER_TITLE ===)/)
+  if (parts.length <= 1) return []
+  // 第一个片段是前言/全局备注，跳过；后续每个片段是一章
+  const chapters: string[] = []
+  for (const part of parts) {
+    if (part.startsWith('=== CHAPTER_TITLE ===')) {
+      chapters.push(part)
+    }
+  }
+  return chapters
 }
 
 /** 从正文中剥离自检（兼容旧格式 --- 分隔符） */

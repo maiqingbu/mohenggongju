@@ -878,32 +878,31 @@ async function findCurrentChapterOutline(): Promise<Outline | null> {
 // ═══════════════════════════════════════════════════
 // 上下文编译 & 注入
 // ═══════════════════════════════════════════════════
-function buildResolverCtx(): ResolverCtx {
-  const outlinesMap = new Map<string, string>()
+// 异步加载所有大纲数据（可等待，避免竞态）
+async function loadAllOutlines(outlinesMap: Map<string, string>): Promise<void> {
+  try {
+    const wid = store?.currentWorkId ?? repo.currentWorkId.value
+    if (wid) {
+      const mainOutline = await getOutline('main', wid)
+      if (mainOutline?.content) outlinesMap.set('main', mainOutline.content)
+    }
+    const volumes = store?.volumes ?? repo.volumes.value
+    for (const vol of volumes) {
+      const vo = await getOutline('volume', vol.id)
+      if (vo?.content) outlinesMap.set('volume_' + vol.id, vo.content)
+    }
+    const chMap = store?.chapterMap ?? repo.chapterMap.value
+    for (const chs of Object.values(chMap)) {
+      for (const ch of chs) {
+        const co = await getOutline('chapter', ch.id)
+        if (co?.content) outlinesMap.set('chapter_' + ch.id, co.content)
+      }
+    }
+  } catch {}
+}
 
-  // 异步加载大纲到 map（同步返回 ctx，异步补数据）
-  const loadAllOutlines = async () => {
-    try {
-      const wid = store?.currentWorkId ?? repo.currentWorkId.value
-      if (wid) {
-        const mainOutline = await getOutline('main', wid)
-        if (mainOutline?.content) outlinesMap.set('main', mainOutline.content)
-      }
-      const volumes = store?.volumes ?? repo.volumes.value
-      for (const vol of volumes) {
-        const vo = await getOutline('volume', vol.id)
-        if (vo?.content) outlinesMap.set('volume_' + vol.id, vo.content)
-      }
-      const chMap = store?.chapterMap ?? repo.chapterMap.value
-      for (const chs of Object.values(chMap)) {
-        for (const ch of chs) {
-          const co = await getOutline('chapter', ch.id)
-          if (co?.content) outlinesMap.set('chapter_' + ch.id, co.content)
-        }
-      }
-    } catch {}
-  }
-  loadAllOutlines().catch(() => {})
+function buildResolverCtx(outlinesMap?: Map<string, string>): ResolverCtx {
+  const map = outlinesMap ?? new Map<string, string>()
 
   return {
     workStore: () => store,
@@ -918,12 +917,14 @@ function buildResolverCtx(): ResolverCtx {
       } catch {}
       return {}
     },
-    outlines: outlinesMap,
+    outlines: map,
   }
 }
 
-function resolveContextInjection(): string {
-  const ctx = buildResolverCtx()
+async function resolveContextInjection(): Promise<string> {
+  const outlinesMap = new Map<string, string>()
+  await loadAllOutlines(outlinesMap)
+  const ctx = buildResolverCtx(outlinesMap)
   const parts: string[] = []
 
   // 无 contextSwitches 时注入基础信息
@@ -1172,7 +1173,7 @@ async function doGenerate() {
   genCount.value++
 
   try {
-    const context = resolveContextInjection()
+    const context = await resolveContextInjection()
     const sysPrompt = buildSystemPrompt(context)
     const maxTokens = computeMaxTokens()
 
@@ -1266,7 +1267,9 @@ async function doGenerateOpening() {
   genCount.value++
 
   try {
-    const ctx = buildResolverCtx()
+    const outlinesMap = new Map<string, string>()
+    await loadAllOutlines(outlinesMap)
+    const ctx = buildResolverCtx(outlinesMap)
     const maxTokens = computeMaxTokens()
     const chaptersToGen = props.maxChapters || props.chapterCount || 3
 

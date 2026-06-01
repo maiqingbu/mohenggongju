@@ -11,7 +11,7 @@ import {
   localCurrentWorkId, localCurrentChapterId, localDbReady,
   localLoadWorks, localAddWork, localRenameWork, localRemoveWork,
   localSelectWork, localAddVolume, localRenameVolume, localRemoveVolume, localMoveVolume,
-  localAddChapter, localRenameChapter, localRemoveChapter,
+  localAddChapter, localRenameChapter, localRemoveChapter, localMoveChapter,
 } from './useLocalWorkTree'
 import type { Chapter } from './useDatabase'
 
@@ -50,7 +50,7 @@ export function useWorkRepo() {
   async function addChapter(volumeId: number, title: string, position?: 'before' | 'after', refId?: number): Promise<number> { return pinia ? pinia.addChapter(volumeId, title, position, refId) : localAddChapter(volumeId, title) }
   async function renameChapter(volumeId: number, id: number, title: string) { if (pinia) await pinia.renameChapter(volumeId, id, title); else localRenameChapter(volumeId, id, title) }
   async function removeChapter(volumeId: number, id: number) { if (pinia) await pinia.removeChapter(volumeId, id); else localRemoveChapter(volumeId, id) }
-  async function moveChapter(volumeId: number, chapterId: number, direction: 'up' | 'down') { if (pinia) await pinia.moveChapter(volumeId, chapterId, direction) }
+  async function moveChapter(volumeId: number, chapterId: number, direction: 'up' | 'down') { if (pinia) await pinia.moveChapter(volumeId, chapterId, direction); else await localMoveChapter(volumeId, chapterId, direction) }
   function updateLocalWordCount(chapterId: number, volumeId: number, wordCount: number) {
     if (pinia) pinia.updateLocalWordCount(chapterId, volumeId, wordCount)
     else { const chs = localChapterMap.value[volumeId]; const ch = chs?.find((c: Chapter) => c.id === chapterId); if (ch) ch.word_count = wordCount }

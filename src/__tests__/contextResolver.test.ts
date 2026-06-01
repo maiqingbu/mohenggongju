@@ -72,7 +72,7 @@ describe('@基础信息', () => {
   })
 
   it('shows fallback when empty', () => {
-    const result = resolveVariable('@基础信息', ctx())
+    const result = resolveVariable('@基础信息', ctx({ wsSettings: { targetWordCount: 0 } }))
     expect(result).toContain('基础信息未填写')
   })
 })

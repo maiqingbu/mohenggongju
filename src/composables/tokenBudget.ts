@@ -80,15 +80,20 @@ export function capContextBlock(block: ContextBlock): ContextBlock {
   const maxChars = block.maxChars ?? CONTEXT_BLOCK_CAPS[block.type] ?? 1000
   if (block.content.length <= maxChars) return block
 
+  // 极小 maxChars 时跳过结构保留，直接硬截断
+  if (maxChars < 100) {
+    return { ...block, content: block.content.slice(0, maxChars) + '\n\n[已截断]' }
+  }
+
   const headRatio = 0.35
   const headLen = Math.floor(maxChars * headRatio)
-  const tailLen = maxChars - headLen - 60 // 留 60 字符给省略声明
+  const tailLen = Math.max(0, maxChars - headLen - 60) // 留 60 字符给省略声明
   const omitted = block.content.length - maxChars
 
   const truncated =
     block.content.slice(0, headLen) +
     `\n\n[${block.label} 省略了约 ${omitted} 字符 — 保留了开头和最新尾部]\n\n` +
-    block.content.slice(-tailLen)
+    (tailLen > 0 ? block.content.slice(-tailLen) : '')
 
   return { ...block, content: truncated }
 }

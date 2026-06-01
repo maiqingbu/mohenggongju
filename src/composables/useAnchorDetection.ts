@@ -108,7 +108,7 @@ function extractNames(text: string, existingEntities: string[]): { name: string;
   const surnameSet = new Set(commonSurnames.split(''))
 
   // 用简单的方式：找"X说"、"X的"、"X和"等模式中的X，且X的第一个字是姓氏
-  const nameMatchPattern = /([一-龥]{2,3})(?=说|问|告诉|道|的|和|与|对|从|在|把|被|给|去|来|到|出|上|下|走|跑|笑|哭|站|坐|拿|放|递|看|听|想|觉得|发现|突然|已经|之前|之后|当时|现在|那时|推开|走进|转头|冷冷|慢慢|突然|转身)/g
+  const nameMatchPattern = /([一-鿿]{2,3})(?=说|问|告诉|道|的|和|与|对|从|在|把|被|给|去|来|到|出|上|下|走|跑|笑|哭|站|坐|拿|放|递|看|听|想|觉得|发现|突然|已经|之前|之后|当时|现在|那时|推开|走进|转头|冷冷|慢慢|突然|转身)/g
 
   let match
   while ((match = nameMatchPattern.exec(text)) !== null) {

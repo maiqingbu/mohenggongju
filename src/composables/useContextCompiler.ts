@@ -289,7 +289,7 @@ export function compileChapterContext(params: {
 
   // 应用上下文块硬上限裁剪
   const budgeted = enforceContextBudget(blocks)
-  const context = budgeted.blocks.map(b => b.content).join('\n\n')
+  let context = budgeted.blocks.map(b => b.content).join('\n\n')
 
   // Token 预算检查
   const budget = calculateBudget({

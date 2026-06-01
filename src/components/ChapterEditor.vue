@@ -1074,7 +1074,7 @@ async function manualSave() {
 
 onUnmounted(() => {
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
-  if (changedSinceLastSave) doSave() // 销毁前刷盘，防止快速切章丢数据
+  if (changedSinceLastSave) doSave().catch(e => console.error('ChapterEditor unmount save failed:', e))
 })
 
 async function saveTitle() {
@@ -1177,7 +1177,6 @@ function triggerAi(action: string) {
     if (action === 'inspire') emit('open-inspire-modal')
     else if (action === 'updateSettings') showSettingsUpdateModal.value = true
     else if (action === 'optimizeTitle') showOptimizeTitle.value = true
-    else if (action === 'analyze') { openBookAnalyzer(); return }
     else if (action === 'shortStory') {
       shortStoryModalVisible.value = true
       return

@@ -541,7 +541,7 @@ watch(structuredForm, () => {
 
 onUnmounted(() => {
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
-  if (saveStatus.value === 'unsaved') doSave() // 销毁前刷盘，防止大纲丢失
+  if (saveStatus.value === 'unsaved') doSave().catch(e => console.error('OutlinePanel unmount save failed:', e))
 })
 
 async function doSave() {
