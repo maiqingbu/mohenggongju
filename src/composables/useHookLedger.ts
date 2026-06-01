@@ -90,7 +90,7 @@ export function describeHookLifecycle(
   // 过期判定：超过 3 倍半衰期
   const overdue = age > halfLife * 3
   // 陈腐判定：休眠超过半衰期
-  const stale = dormancy > halfLife && hook.status !== 'resolved'
+  const stale = dormancy > halfLife && hook.status !== 'resolved' && hook.status !== 'deferred'
   // 可回收判定：接近半衰期 + 有推进记录
   const readyToResolve =
     age >= halfLife * 0.7 &&
@@ -197,7 +197,7 @@ export function analyzeHookHealth(
     if (h.dependsOn && h.dependsOn.length > 0) {
       const unresolvedDeps = h.dependsOn.filter(depId => {
         const dep = hooks.find(x => x.hookId === depId)
-        return dep && dep.status !== 'resolved'
+        return !dep || dep.status !== 'resolved'
       })
       if (unresolvedDeps.length > 0) {
         issues.push({

@@ -87,7 +87,7 @@ function genreHeatScore(genre: string, subgenre: string): number {
 // ── 平台字数适合度 ──
 
 function wordCountPlatformFit(targetWords: number, platformId: string): number {
-  if (!platformId || !targetWords) return 50
+  if (!platformId || targetWords == null) return 50
   // 各平台最优字数范围（单位：万）
   const ranges: Record<string, [number, number]> = {
     fanqie: [50, 300],

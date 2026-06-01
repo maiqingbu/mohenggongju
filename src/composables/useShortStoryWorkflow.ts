@@ -52,7 +52,8 @@ export async function prepareShortStoryWork(
 
   const work = await repo.addWork(title)
   if (!work) throw new Error('创建作品失败')
-  const workId = typeof work === 'number' ? work : (work as any).id
+  const workId = typeof work === 'number' ? work : (work as any)?.id
+  if (workId == null) throw new Error('创建作品失败：无法获取 workId')
   repo.currentWorkId.value = workId
 
   const volumeId = await repo.addVolume(workId, '默认卷')
@@ -105,7 +106,7 @@ export async function launchShortStoryWorkflow(
   const result: ShortStoryResult = {
     runner, workId, chapterId,
     waitForDecision: (decision: Decision) => {
-      try { runner.decide(decision) } catch (e: any) { callbacks.onError?.(e) }
+      try { runner.decide(decision) } catch (e: any) { console.error('[shortStory] decide failed:', e); callbacks.onError?.(e) }
     },
     abort: () => { runner.abort() },
   }

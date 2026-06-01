@@ -76,6 +76,9 @@ export function checkCharacterConsistency(
   if (!baseline.alive && newState.alive) {
     issues.push({ level: 'ERROR', type: 'dead_revived', message: `已死亡角色 "${baseline.name}" 在第 ${chapter} 章复活（无复活设定）`, chapter })
   }
+  if (baseline.alive && !newState.alive) {
+    issues.push({ level: 'ERROR', type: 'unexpected_death', message: `角色 "${baseline.name}" 在第 ${chapter} 章意外死亡（无死亡设定）`, chapter })
+  }
 
   return issues
 }
@@ -127,7 +130,7 @@ export function checkForeshadowing(
 
   for (const fs of foreshadows) {
     if (fs.resolved) continue
-    if (fs.resolvedChapter !== null && fs.resolvedChapter <= currentChapter && !fs.resolved) {
+    if (fs.resolvedChapter !== null && fs.resolvedChapter > 0 && fs.resolvedChapter <= currentChapter && !fs.resolved) {
       issues.push({
         level: 'WARNING',
         type: 'unresolved_foreshadow',

@@ -304,7 +304,7 @@ register('@卷纲', (ctx) => {
 
 register('@当前卷纲', (ctx) => {
   const store = ctx.workStore()
-  const vid = store?.currentVolumeId || store?.volumes?.[0]?.id
+  const vid = store?.currentVolumeId ?? store?.volumes?.[0]?.id
   if (vid && ctx.outlines) {
     const content = ctx.outlines.get(`volume_${vid}`)
     if (content) return content

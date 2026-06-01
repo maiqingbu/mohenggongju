@@ -383,6 +383,19 @@ async function loadOutline() {
     if (outline) {
       localContent.value = outline.content || ''
       wordCount.value = outline.word_count
+      // 恢复紧急备份（上次异步保存若失败会残留）
+      try {
+        const wid = repo.currentWorkId.value
+        const type = selectedType.value
+        const sid = selectedId.value
+        if (wid && type && sid != null) {
+          const backup = localStorage.getItem(`ns:backup:outline:${wid}:${type}:${sid}`)
+          if (backup) {
+            localContent.value = backup
+            localStorage.removeItem(`ns:backup:outline:${wid}:${type}:${sid}`)
+          }
+        }
+      } catch {}
       // 同步到 contentEditable div
       if (editorEl.value && editorEl.value.innerText !== localContent.value) {
         editorEl.value.innerText = localContent.value
@@ -576,6 +589,13 @@ async function doSave() {
     })
     lastLoadedContent = content
     saveStatus.value = 'saved'
+    // 保存成功，清除紧急备份
+    try {
+      const wid = repo.currentWorkId.value
+      const type = selectedType.value
+      const sid = selectedId.value
+      if (wid && type && sid != null) localStorage.removeItem(`ns:backup:outline:${wid}:${type}:${sid}`)
+    } catch {}
   } catch (err) {
     console.error('大纲保存失败', err)
     saveStatus.value = 'unsaved'

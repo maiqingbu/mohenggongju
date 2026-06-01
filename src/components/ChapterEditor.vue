@@ -986,6 +986,16 @@ watch(chapter, (ch) => {
   if (editorEl.value && editorEl.value.innerText !== content) {
     editorEl.value.innerText = content
   }
+  // 恢复紧急备份（上次异步保存若失败会残留）
+  try {
+    const wid = tauri ? store?.currentWorkId : localCurrentWorkId.value
+    const backup = localStorage.getItem(`ns:backup:ch:${wid}:${ch.id}`)
+    if (backup) {
+      bodyContent.value = backup
+      if (editorEl.value) editorEl.value.innerText = backup
+      localStorage.removeItem(`ns:backup:ch:${wid}:${ch.id}`)
+    }
+  } catch {}
   saveStatus.value = 'saved'
   emit('save-status-change', 'saved')
 }, { immediate: true })
@@ -1059,6 +1069,12 @@ async function doSave() {
     changedSinceLastSave = false
     saveStatus.value = 'saved'
     emit('save-status-change', 'saved')
+    // 保存成功，清除紧急备份
+    try {
+      const wid = tauri ? store?.currentWorkId : localCurrentWorkId.value
+      const cid = chapter.value?.id
+      if (wid && cid) localStorage.removeItem(`ns:backup:ch:${wid}:${cid}`)
+    } catch {}
   } catch {
     saveStatus.value = 'unsaved'
     emit('save-status-change', 'unsaved')
