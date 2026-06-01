@@ -16,7 +16,7 @@
  * - 精准接通AiModal按钮
  */
 
-import type { WorkflowStep } from '../types'
+import type { WorkflowStep } from './types'
 
 // ── 生命周期阶段定义 ──
 
@@ -72,7 +72,7 @@ export async function detectLifecycleStage(
   const { workId } = context
 
   // 动态导入依赖
-  const { useWorkRepo } = await import('../../composables/useWorkRepo')
+  const { useWorkRepo } = await import('../composables/useWorkRepo')
   const repo = useWorkRepo()
 
   // 获取作品数据
@@ -91,9 +91,12 @@ export async function detectLifecycleStage(
   const completed: string[] = []
 
   // ── 阶段1：设定检测 ──
-  const hasTitle = !!work.title
-  const hasGenre = !!work.genre
-  const hasDesc = !!work.description
+	const hasTitle = !!work.title
+	// genre/description 存储在 workspace settings 中，不在 Work 表
+	const wsRaw = typeof localStorage !== "undefined" ? localStorage.getItem(`ns:ws:${workId}`) : null
+	const ws: Record<string, unknown> = wsRaw ? JSON.parse(wsRaw) : {}
+	const hasGenre = !!(ws.genre as string)?.trim()
+	const hasDesc = !!(ws.intro || ws.summary || (ws as any).description)?.toString().trim()
 
   if (hasTitle) completed.push('作品标题')
   if (hasGenre) completed.push('作品类型')
@@ -115,7 +118,7 @@ export async function detectLifecycleStage(
   }
 
   // ── 阶段2：信息检测 ──
-  const { getOutline } = await import('../../composables/useOutlines')
+  const { getOutline } = await import('../composables/useOutlines')
   const mainOutline = await getOutline('main', workId)
   const hasWorldview = !!(work as any).worldview
   const hasCharacters = !!(work as any).characters && (work as any).characters.length > 0

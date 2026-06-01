@@ -364,7 +364,8 @@ async function collectInput(): Promise<AssessmentInput> {
   if (settings.platformId) {
     try {
       const strategies = (await import('../data/platform_strategies.json')).default
-      const found = (strategies as any[]).find((s: any) => s.id === settings.platformId)
+      const platformList = Object.values((strategies as any).platforms || {}) as any[]
+      const found = platformList.find((s: any) => s.id === settings.platformId)
       ipAdaptationPotential = found?.ip_adaptation_potential
     } catch {}
   }

@@ -65,6 +65,8 @@ export function defaultSettings(): WorkspaceSettingsData {
       contextWords: 0,
       autoReview: false,
       autoClean: false,
+      autoExtractSettings: true,
+      volumeBoundaryCheck: true,
       fields: [],
     },
   }

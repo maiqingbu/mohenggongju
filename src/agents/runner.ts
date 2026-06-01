@@ -111,7 +111,7 @@ export class WorkflowRunner {
       stepMap.set(step.id, step)
     }
 
-    let currentStepId = steps[0]?.id
+    let currentStepId: string | null | undefined = steps[0]?.id
     if (!currentStepId) {
       this._status = 'done'
       this.bus.emit('run:done')

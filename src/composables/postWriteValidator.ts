@@ -32,7 +32,7 @@ export interface ValidationResult {
   autoFixes: AutoFix[]
 }
 
-interface ValidationParams {
+export interface ValidationParams {
   content: string
   chapterTitle: string
   existingTitles: string[]

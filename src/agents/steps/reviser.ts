@@ -88,7 +88,7 @@ REPLACEMENT_TEXT: <替换后文本>
 === UPDATED_HOOKS ===
 （如有伏笔状态变更：advance/resolve/defer 列表）`,
 
-    parseOutput(rawText: string): ReviseOutput {
+    parseOutput(rawText: string): Record<string, unknown> {
       const fixedIssues = extractSection(rawText, 'FIXED_ISSUES')
         .split('\n')
         .filter(Boolean)

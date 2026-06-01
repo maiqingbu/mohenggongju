@@ -132,9 +132,6 @@ describe('设定更新回滚测试', () => {
     // 3. 模拟更新失败（通过 mock mgr.update 抛出异常）
     const agent = createExtractSettingsAgent()
 
-    // 保存原始的 import
-    const originalImport = globalThis.import
-
     // 创建一个会失败的 ctx
     const failingCtx = {
       workId: 1,

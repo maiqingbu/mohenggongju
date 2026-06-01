@@ -993,24 +993,29 @@ async function resolveContextInjection(): Promise<string> {
           break
         case 'foreshadowStatus': {
           parts.push('【伏笔状态】\n' + resolveVariable('@伏笔状态', ctx))
-          // 附加伏笔账本摘要
+          // 附加伏笔账本摘要 — 从本地设定数据而非 Work 类型读取
           try {
-            const w = store?.currentWork
-            if (w?.foreshadowings?.length > 0) {
-              const hooks: HookEntry[] = w.foreshadowings.map((f: any, i: number) => ({
-                hookId: f.id || `hook-${i}`,
-                name: f.name || '',
-                type: f.type || 'mystery',
-                status: f.status || 'open',
-                startChapter: f.plantedChapter || f.startChapter || 1,
-                lastAdvancedChapter: f.lastPushedChapter || f.plantedChapter || 1,
-                expectedPayoff: f.expectedPayoff || '',
-                notes: f.notes || '',
-                advancedCount: f.advancedCount || 0,
-              }))
-              const hookSummary = formatHookContext(hooks)
-              if (hookSummary && !hookSummary.includes('暂无活跃伏笔')) {
-                parts.push('【伏笔账本摘要】\n' + hookSummary)
+            const wid = store?.currentWorkId ?? repo.currentWorkId.value
+            if (wid) {
+              const raw = localStorage.getItem('ns:settings:w' + wid)
+              const settings: any[] = raw ? JSON.parse(raw) : []
+              const fores = settings.filter((s: any) => s.type === 'foreshadowing')
+              if (fores.length > 0) {
+                const hooks: HookEntry[] = fores.map((f: any, i: number) => ({
+                  hookId: f.id || `hook-${i}`,
+                  name: f.name || '',
+                  type: f.type || 'mystery',
+                  status: f.status || 'open',
+                  startChapter: f.plantedChapter || f.startChapter || 1,
+                  lastAdvancedChapter: f.lastPushedChapter || f.plantedChapter || 1,
+                  expectedPayoff: f.expectedPayoff || '',
+                  notes: f.notes || '',
+                  advancedCount: f.advancedCount || 0,
+                }))
+                const hookSummary = formatHookContext(hooks)
+                if (hookSummary && !hookSummary.includes('暂无活跃伏笔')) {
+                  parts.push('【伏笔账本摘要】\n' + hookSummary)
+                }
               }
             }
           } catch {}

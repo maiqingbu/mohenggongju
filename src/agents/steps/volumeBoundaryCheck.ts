@@ -43,11 +43,11 @@ export function createVolumeBoundaryCheckAgent(): AgentSpec {
       // 检测下一卷是否存在
       if (totalVolumes <= 1) {
         // 只有一卷，不需要检测下一卷
-        return {
+        return JSON.stringify({
           ready: true,
           missing: [],
           message: '✅ 单卷作品，无需检测下一卷',
-        }
+        })
       }
 
       // 检测下一卷的卷纲
@@ -59,22 +59,22 @@ export function createVolumeBoundaryCheckAgent(): AgentSpec {
       // 找到当前卷的索引
       const currentVolumeIndex = volumes.findIndex((v: any) => v.id === currentVolumeId)
       if (currentVolumeIndex === -1) {
-        return {
+        return JSON.stringify({
           ready: false,
           missing: [{ type: 'error', field: 'volume', label: '未找到当前卷', autoGeneratable: false }],
           message: '❌ 未找到当前卷信息',
-        }
+        })
       }
 
       // 检测下一卷是否存在
       const nextVolumeIndex = currentVolumeIndex + 1
       if (nextVolumeIndex >= volumes.length) {
         // 没有下一卷，可能是最后一卷
-        return {
+        return JSON.stringify({
           ready: true,
           missing: [],
           message: '✅ 当前卷已是最后一卷',
-        }
+        })
       }
 
       const nextVolume = volumes[nextVolumeIndex]
@@ -118,7 +118,7 @@ export function createVolumeBoundaryCheckAgent(): AgentSpec {
       }
 
       console.log(`[volumeBoundaryCheck] 检测结果:`, result)
-      return result
+      return JSON.stringify(result)
     },
   }
 }

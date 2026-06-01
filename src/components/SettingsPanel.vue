@@ -437,7 +437,7 @@ const FIELD_ALIASES: Record<string, Record<string, string>> = {
     // 物品
     '关键物品': 'keyItems', '道具': 'keyItems', '装备': 'keyItems', 'items': 'keyItems',
     // 位置
-    '位置': 'location', '所在地': 'location', '当前位置': 'location', '位置': 'location',
+    '位置': 'location', '所在地': 'location', '当前位置': 'location',
     // 分类
     '类型': 'category', '角色类型': 'category', '人物类型': 'category',
     // 动机
@@ -543,7 +543,7 @@ function enrichStructuredData(raw: Record<string, unknown>, entityType: SettingE
     if (!data.category || data.category === '') {
       data.category = '配角'
     } else {
-      const normCat = CHAR_CATEGORY_MAP[data.category] || CHAR_CATEGORY_MAP[data.category.toLowerCase()]
+      const normCat = CHAR_CATEGORY_MAP[data.category] || (typeof data.category === 'string' ? CHAR_CATEGORY_MAP[data.category.toLowerCase()] : undefined)
       if (normCat) data.category = normCat
     }
     // 确保数组字段是数组
@@ -562,7 +562,7 @@ function enrichStructuredData(raw: Record<string, unknown>, entityType: SettingE
     if (!data.category || data.category === '') {
       data.category = '其他'
     } else {
-      const normCat = WS_CATEGORY_MAP[data.category] || WS_CATEGORY_MAP[data.category.toLowerCase()]
+      const normCat = WS_CATEGORY_MAP[data.category] || (typeof data.category === 'string' ? WS_CATEGORY_MAP[data.category.toLowerCase()] : undefined)
       if (normCat) data.category = normCat
     }
     if (!Array.isArray(data.rules)) data.rules = typeof data.rules === 'string' ? (data.rules as string).split(/[,，、;；]\s*/).filter(Boolean) : []

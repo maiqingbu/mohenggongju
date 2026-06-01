@@ -1449,7 +1449,7 @@ function splitChapterContent(text: string): { title: string; content: string }[]
   return sections
 }
 
-function onApprovalStart(cfg: { chapterCount: number; extra: string }) {
+function onApprovalStart(_field: string) {
   emit('ai-action', aiModal.field)
 }
 
