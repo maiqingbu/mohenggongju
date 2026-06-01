@@ -632,6 +632,13 @@ import { createParagraphFixAgent } from '../agents/steps/paragraphFix'
 import { createVolumeBoundaryCheckAgent } from '../agents/steps/volumeBoundaryCheck'
 import { createLengthNormalizerAgent } from '../agents/steps/lengthNormalizer'
 import { createReviserAgent } from '../agents/steps/reviser'
+import { createSettingDetectorAgent } from '../agents/steps/settingDetectorAgent'
+import { createInfoDetectorAgent } from '../agents/steps/infoDetectorAgent'
+import { createOutlineDetectorAgent } from '../agents/steps/outlineDetectorAgent'
+import { createPreflightCheckAgent } from '../agents/steps/preflightCheckAgent'
+import { ideaAgent } from '../agents/idea'
+import { settingAgent } from '../agents/setting'
+import { characterAgent } from '../agents/character'
 import { buildContinueChapterWorkflow } from '../agents/workflows/continueChapter'
 import { detectLifecycleStage, buildOpeningWorkflow, buildContinueWithPreflightWorkflow, formatLifecycleResult } from '../agents/lifecycle'
 import { playNotifySound, playClickSound } from '../composables/useEditorSettings'
@@ -661,9 +668,21 @@ const _snapshotWordCount = ref(0) // D2: 当前关联快照字数（template 中
 // ── R6: Runner 实例 ──
 const runner = new WorkflowRunner()
 runner.registerAgents([
+  // 灵感 & 设定阶段
+  ideaAgent,
+  settingAgent,
+  characterAgent,
+  createSettingDetectorAgent(),
+  createInfoDetectorAgent(),
+  // 大纲阶段
   outlineAgent,
   chapterAgent,
+  createOutlineDetectorAgent(),
+  // 创作阶段
   bodyAgent,
+  // 续写前置检测
+  createPreflightCheckAgent(),
+  // 质量保障
   createConsistencyCheckAgent(),
   createCommitWriteAgent(),
   createExtractSettingsAgent(),

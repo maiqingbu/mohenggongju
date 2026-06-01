@@ -498,9 +498,9 @@ function advanceStep() {
 
 function generateShortStory() {
   const payload = {
-    platformId: '',
+    platformId: selectedPlatform.value,
     tagSet: {
-      platform: '',
+      platform: selectedPlatform.value,
       channel: channel.value,
       genre: selectedTrack.value || '',
       subgenre: [],

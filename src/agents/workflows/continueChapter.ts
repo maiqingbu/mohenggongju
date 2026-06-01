@@ -156,12 +156,12 @@ export function buildContinueChapterWorkflow(config: ContinueChapterConfig): Wor
         agentId: 'extract_settings',
         inputs: {
           action: 'extract',
-          target: `@ctx.step:style_review_${idx}`,
+          target: `@ctx.step:paragraph_fix_${idx}`,
           chapterNo: String(chNo),
         },
         approval: 'auto',
         skippable: true,
-        next: isLast ? 'volume_boundary_check' : `gen_body_${idx + 1}`,
+        next: isLast ? (config.volumeInfo ? 'volume_boundary_check' : 'consistency_check') : `gen_body_${idx + 1}`,
       })
     }
   }

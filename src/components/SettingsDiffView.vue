@@ -47,8 +47,6 @@ const props = defineProps<{ diffs: SettingsDiff[] }>()
 const emit = defineEmits<{ (e: 'toggle', entityId: string, field: string, selected: boolean): void }>()
 
 function toggleField(diff: SettingsDiff, field: string, selected: boolean) {
-  const f = diff.fields.find(x => x.field === field)
-  if (f) f.selected = selected
   emit('toggle', diff.entityId, field, selected)
 }
 

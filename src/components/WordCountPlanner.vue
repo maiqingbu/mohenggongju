@@ -77,9 +77,9 @@ function apply() {
 }
 
 function open(existing?: { targetWords?: number; wordsPerChapter?: number; chaptersPerVolume?: number }) {
-  if (existing?.targetWords) targetWords.value = existing.targetWords
-  if (existing?.wordsPerChapter) wordsPerChapter.value = existing.wordsPerChapter
-  if (existing?.chaptersPerVolume) chaptersPerVolume.value = existing.chaptersPerVolume
+  if (existing?.targetWords != null) targetWords.value = existing.targetWords
+  if (existing?.wordsPerChapter != null) wordsPerChapter.value = existing.wordsPerChapter
+  if (existing?.chaptersPerVolume != null) chaptersPerVolume.value = existing.chaptersPerVolume
   visible.value = true
 }
 

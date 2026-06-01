@@ -112,7 +112,8 @@ export async function localSelectWork(workId: number) {
 
 export async function localAddVolume(workId: number, title: string): Promise<number> {
   const id = nextId()
-  const sortOrder = localVolumes.value.filter(v => v.work_id === workId).length
+  const workVols = localVolumes.value.filter(v => v.work_id === workId)
+  const sortOrder = Math.max(...workVols.map(v => v.sort_order), -1) + 1
   localVolumes.value.push({ id, work_id: workId, title, sort_order: sortOrder })
   if (!localChapterMap.value[id]) localChapterMap.value[id] = []
   persist()

@@ -114,7 +114,11 @@ const wordCountLabel = computed(() => {
 // 当弹窗打开时，开始生成
 watch(() => props.visible, async (v) => {
   if (v) {
-    await startGeneration()
+    startGeneration().catch((e: any) => {
+      console.error('[ShortStoryReviewModal] 生成失败:', e)
+      state.value = 'error'
+      errorMsg.value = e?.message || '生成失败，请重试'
+    })
   } else {
     abortStream?.()
     abortStream = null

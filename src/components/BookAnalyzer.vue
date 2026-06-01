@@ -205,15 +205,17 @@ const selectedModel = ref(models[0])
 
 const chapterIndexText = computed(() => {
   if (!chapters.value.length) return ''
-  const idx = chapters.value.findIndex(c => c.id === chapters.value[0]?.id)
-  return idx >= 0 ? `第1-${chapters.value.length}章` : ''
+  const sel = chapters.value.filter(c => selectedIds.value.includes(c.id))
+  if (!sel.length) return `第1-${chapters.value.length}章`
+  const indices = sel.map(c => chapters.value.indexOf(c)).filter(i => i >= 0).sort((a, b) => a - b)
+  return indices.length ? `第${indices[0] + 1}-${indices[indices.length - 1] + 1}章` : `第1-${chapters.value.length}章`
 })
 
 const estimatedCost = computed(() => {
   const selChs = chapters.value.filter(c => selectedIds.value.includes(c.id))
   const totalChars = selChs.reduce((sum, c) => {
     const wc = parseInt(c.wordCount.replace(/[^0-9]/g, '') || '0')
-    return sum + wc * 1000
+    return sum + wc
   }, 0)
   return Math.max(1, Math.ceil(totalChars / 1000 * 3))
 })

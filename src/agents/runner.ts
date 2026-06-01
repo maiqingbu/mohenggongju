@@ -353,7 +353,7 @@ export class WorkflowRunner {
           this.bus.emit('step:warning', step.id, `输入 "${key}" 引用未解析: ${ref}`)
           continue
         }
-        parts.push(`${key}: ${JSON.stringify(resolved)}`)
+        parts.push(typeof resolved === 'string' ? `${key}: ${resolved}` : `${key}: ${JSON.stringify(resolved)}`)
       } else {
         parts.push(`${key}: ${ref}`)
       }

@@ -10,7 +10,12 @@
  */
 
 import type { MissingItem } from '../types'
-import { getOutline } from '../../composables/useOutlines'
+
+/** 延迟导入 getOutline，避免模块顶层依赖 Vue composable */
+async function _getOutline(type: string, refId: number | null) {
+  const { getOutline } = await import('../../composables/useOutlines')
+  return getOutline(type as any, refId)
+}
 
 export interface OutlineDetectionResult {
   /** 是否全部齐全（总纲 + 至少第一卷卷纲 + 至少开篇3章章纲） */
@@ -74,7 +79,7 @@ export async function detectOutlineCompleteness(
   }
 
   // 1. 检测总纲
-  const mainOutline = await getOutline('main', workId)
+  const mainOutline = await _getOutline('main', workId)
   detail.hasMainOutline = mainOutline !== null
 
   if (detail.hasMainOutline) {
@@ -90,7 +95,7 @@ export async function detectOutlineCompleteness(
 
   // 2. 检测卷纲（至少第一卷）
   for (const vol of volumes) {
-    const volOutline = await getOutline('volume', vol.id)
+    const volOutline = await _getOutline('volume', vol.id)
     detail.volumeOutlines[vol.index] = volOutline !== null
   }
 
@@ -122,7 +127,7 @@ export async function detectOutlineCompleteness(
   let openingCount = 0
 
   for (const ch of allChapters) {
-    const chOutline = await getOutline('chapter', ch.id)
+    const chOutline = await _getOutline('chapter', ch.id)
     detail.chapterOutlines[ch.id] = chOutline !== null
   }
 
@@ -207,7 +212,7 @@ export async function detectChapterPreflight(
 
   // 2. 检测该卷是否有卷纲
   const volumeId = targetChapter?.volumeId ?? volumes[0]?.id
-  const hasVolumeOutline = volumeId ? (await getOutline('volume', volumeId)) !== null : false
+  const hasVolumeOutline = volumeId ? (await _getOutline('volume', volumeId)) !== null : false
 
   if (!hasVolumeOutline) {
     missing.push({
@@ -220,7 +225,7 @@ export async function detectChapterPreflight(
 
   // 3. 检测该章是否有章纲
   const hasChapterOutline = targetChapter
-    ? (await getOutline('chapter', targetChapter.id)) !== null
+    ? (await _getOutline('chapter', targetChapter.id)) !== null
     : false
 
   if (!hasChapterOutline) {
