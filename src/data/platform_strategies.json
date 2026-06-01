@@ -1,0 +1,894 @@
+{
+  "schema_version": "1.0",
+  "last_updated": "2026-05-13",
+  "platforms": {
+    "zhihu_salt": {
+      "id": "zhihu_salt",
+      "name": "知乎盐选/盐言故事",
+      "owner": "知乎",
+      "url": "https://www.zhihu.com/",
+      "app": "盐言故事",
+      "rating": 5,
+      "channels": ["female", "male", "unisex"],
+      "audience": {
+        "gender": "female_80",
+        "age": "18-30",
+        "tier": "tier1_tier2_students",
+        "payment_will": "high"
+      },
+      "preferred_genres": [
+        "modern_romance", "suspense", "brain_hole",
+        "ancient_romance", "realistic", "family", "anecdote"
+      ],
+      "preferred_subgenres": [
+        "chase_wife", "dead_lit", "true_fake_daughter",
+        "metaphysics", "rebirth", "marriage_drama",
+        "brain_hole_suspense", "double_redemption"
+      ],
+      "word_count": {"min": 10000, "max": 100000, "ideal": 20000},
+      "rhythm": "千字一高潮",
+      "pov": ["first_person", "third_person_limited"],
+      "style": "zhihu_style",
+      "style_rules": [
+        "篇幅一到三万字",
+        "主线贯穿支线明",
+        "节奏明快别拖沓",
+        "人物饱满有成长",
+        "通俗流畅口语化",
+        "短小精悍成本低",
+        "反转悬念要跟上",
+        "跌宕起伏才精彩",
+        "引发共鸣有思考",
+        "源于生活高于生活"
+      ],
+      "structure": {
+        "opening": "开篇必有钩子或反转，黄金三章决定生死",
+        "middle": "每 2000-3000 字一个反转，付费章前留高潮",
+        "ending": "升华主题、价值观飙升、耐人寻味"
+      },
+      "taboo": [
+        "涉政", "明显灵异", "血腥暴力细节",
+        "露骨色情", "擦边", "三俗博眼球"
+      ],
+      "revenue_model": "subscription_share",
+      "revenue_typical_range": [500, 50000],
+      "revenue_unit": "元/篇",
+      "submission": {
+        "url": "https://salt.zhihu.com/",
+        "min_words": 8000,
+        "needs_outline": false,
+        "review_time_days": 7,
+        "green_channel_genres": ["suspense", "brain_hole", "male_channel"],
+        "green_channel_requirement": "回答7天内 >400 赞且 >5000 字"
+      },
+      "hot_topics_2026": [
+        "死人文学回春",
+        "真假千金",
+        "脑洞悬疑",
+        "银发文学",
+        "双向救赎",
+        "BE美学",
+        "穿书攻略"
+      ],
+      "iconic_works": [
+        "宫墙柳", "无法触碰", "煤矿少女周思思",
+        "思沅", "河清海晏", "锁金宫", "执笔",
+        "苏梅梅的超市", "方夏", "我不做剑主很多年",
+        "近视眼勇闯恐怖游戏", "七十新生"
+      ],
+      "ip_adaptation_potential": "high"
+    },
+
+    "fanqie": {
+      "id": "fanqie",
+      "name": "番茄小说",
+      "owner": "字节跳动",
+      "url": "https://fanqienovel.com/",
+      "rating": 5,
+      "channels": ["female", "male"],
+      "audience": {
+        "gender": "balanced_male_slight",
+        "age": "10-19_and_40-60",
+        "tier": "downstream",
+        "payment_will": "free_ads"
+      },
+      "preferred_genres": [
+        "modern_romance", "ancient_romance", "fantasy",
+        "urban", "xianxia", "rebirth", "transmigration",
+        "system", "suspense", "anecdote", "family", "campus"
+      ],
+      "preferred_subgenres": [
+        "chase_wife", "rebirth_revenge", "dead_lit",
+        "swap_wife", "learn_lesson", "gratitude_flow",
+        "countdown_lit", "big_heroine", "harem_palace",
+        "petty_thief_war_god", "city_god_doctor"
+      ],
+      "word_count": {"min": 6000, "max": 30000, "ideal": 15000},
+      "rhythm": "黄金三章+章节小标题+反转密集",
+      "pov": ["third_person_limited", "first_person"],
+      "style": "fanqie_style",
+      "style_rules": [
+        "推荐第三人称",
+        "必须分章节小标题",
+        "强冲突开头",
+        "套路+情绪>逻辑",
+        "下沉市场可读性优先",
+        "每章 1500-2000 字",
+        "末尾留卡点"
+      ],
+      "structure": {
+        "opening": "黄金三章，开篇即冲突",
+        "middle": "推荐第三人称视角，分章节小标题",
+        "ending": "可留续作空间或圆满收尾"
+      },
+      "taboo": [
+        "涉政", "色情", "极端暴力",
+        "违法犯罪手法", "未成年涉黄"
+      ],
+      "revenue_model": "ad_share_10_to_0",
+      "revenue_typical_range": [500, 80000],
+      "revenue_unit": "元/篇",
+      "revenue_2026_policy": {
+        "ultra_short": {"min": 80, "max": 500, "unit": "元/千字"},
+        "medium_short": {"min": 100, "max": 700, "unit": "元/千字"},
+        "top_bonus": "单本最高 8 万元",
+        "bonus_pool": "500 万+ 元/季度",
+        "ip_adaptation": "爆款进入红果短剧/漫剧改编池"
+      },
+      "submission": {
+        "url": "fanqienovel.com/writer/zone",
+        "min_words": 6000,
+        "review_method": "机器初筛+人工审核+读者数据",
+        "algorithm_cycle": "作品 14 天一周期，大库 30 天一周期"
+      },
+      "hot_topics_2026": [
+        "重生虐恋",
+        "倒计时文学",
+        "死人文学",
+        "学乖文",
+        "报恩流",
+        "悬疑灵异新题材",
+        "世情微悬疑",
+        "古言精致叙事"
+      ],
+      "iconic_works": [
+        "真千金她是学霸", "他从大雾降落", "阶前误海棠",
+        "家里家外", "十日终焉", "斩神", "我能无限顿悟"
+      ],
+      "ip_adaptation_potential": "very_high",
+      "ai_friendly": "明确支持，平台自有 AI 写作工具箱"
+    },
+
+    "qimao": {
+      "id": "qimao",
+      "name": "七猫小说",
+      "owner": "上海阅文（已转独立）",
+      "url": "https://www.qimao.com/",
+      "rating": 4,
+      "channels": ["female", "male"],
+      "audience": {
+        "gender": "female_slight",
+        "age": "all_ages",
+        "tier": "downstream",
+        "payment_will": "free_ads_partial_paid"
+      },
+      "preferred_genres": [
+        "modern_romance", "ancient_romance", "urban",
+        "fantasy", "xianxia", "history", "suspense"
+      ],
+      "preferred_subgenres": [
+        "flash_marriage", "cute_baby", "team_pet",
+        "marriage_first", "divorce_substitute",
+        "palace_drama", "metaphysics", "city_god_doctor",
+        "war_god_petty_thief", "knowhow_zhihu_style"
+      ],
+      "word_count": {"min": 10000, "max": 1000000, "ideal_short": 100000},
+      "rhythm": "新媒体节奏，强冲突",
+      "pov": ["first_person", "third_person_limited"],
+      "style": "qimao_media_style",
+      "style_rules": [
+        "情绪强为先",
+        "切入点新",
+        "矛盾激烈",
+        "男女主对手戏带感",
+        "三万字内须设付费卡点",
+        "付费前每章 1500-2000 字",
+        "末尾留伏笔"
+      ],
+      "taboo": [
+        "工作室代写（严禁）", "涉政", "色情", "抄袭"
+      ],
+      "revenue_model": "guarantee_plus_share",
+      "revenue_unit": "元/千字",
+      "revenue_2025_policy": {
+        "new_author_camp": {
+          "A_level": 8, "B_level": 6, "C_level": 4, "D_level": 2,
+          "monthly_cap_words": 300000
+        },
+        "ip_short_adapt": {"min": 15000, "max": 50000, "unit": "元/部"},
+        "ip_long_adapt": {"min": 30000, "max": 100000, "unit": "元/部"},
+        "ip_profit_share": "10%-20%"
+      },
+      "submission": {
+        "min_words_for_submission": "开篇 1 万字",
+        "needs_outline": true,
+        "needs_form": true,
+        "review_time_days": 5
+      },
+      "iconic_workflow": "保底+超保底分成",
+      "ip_adaptation_potential": "high"
+    },
+
+    "toutiao": {
+      "id": "toutiao",
+      "name": "今日头条/头条故事",
+      "owner": "字节跳动",
+      "url": "https://www.toutiao.com/",
+      "rating": 4,
+      "channels": ["unisex"],
+      "audience": {
+        "gender": "male_slight",
+        "age": "35-55",
+        "tier": "downstream_tier3_tier4",
+        "payment_will": "free_ads"
+      },
+      "preferred_genres": [
+        "family", "realistic", "anecdote", "rural_drama",
+        "workplace", "romance_middle_aged"
+      ],
+      "preferred_subgenres": [
+        "marriage_drama", "neighbor_story",
+        "real_event_adapt", "workplace_true_story",
+        "anecdote_rural", "year_nostalgia"
+      ],
+      "word_count": {
+        "weitoutiao": {"min": 300, "max": 2000},
+        "article": {"min": 1500, "max": 6000},
+        "fanqie_linked": {"min": 6000, "max": 30000}
+      },
+      "rhythm": "标题党+情绪化+真实感",
+      "pov": ["first_person"],
+      "style": "toutiao_style",
+      "style_rules": [
+        "第一人称为主（我表姐/我老公）",
+        "包装成真实故事",
+        "标题党+情绪化",
+        "贴近民生热点",
+        "代入感强"
+      ],
+      "revenue_model": "ad_share_per_view",
+      "revenue_typical": "1000 阅读 1-3 元",
+      "ip_adaptation_potential": "medium"
+    },
+
+    "weixin_mp": {
+      "id": "weixin_mp",
+      "name": "微信公众号",
+      "owner": "腾讯",
+      "url": "https://mp.weixin.qq.com/",
+      "rating": 4,
+      "channels": ["unisex"],
+      "audience": {
+        "gender": "female_slight",
+        "age": "30-50",
+        "tier": "middle_class",
+        "payment_will": "willing_to_appreciate"
+      },
+      "preferred_genres": [
+        "family", "realistic", "workplace", "suspense",
+        "anecdote", "history_anecdote"
+      ],
+      "preferred_subgenres": [
+        "marriage_drama", "real_first_person",
+        "anecdote_strange_tale", "history_anecdote",
+        "workplace_complain", "social_topic"
+      ],
+      "word_count": {"min": 2000, "max": 6000, "ideal": 3500},
+      "rhythm": "起承转合，结尾升华",
+      "pov": ["first_person", "third_person_omni"],
+      "style": "mp_style",
+      "style_rules": [
+        "第一人称为主",
+        "鸡汤化",
+        "社会议题贴近",
+        "情绪共鸣",
+        "600字可插1条广告，1000字+可插2条"
+      ],
+      "revenue_model": "ad_share_plus_appreciation",
+      "revenue_per_1000_reads": "5-50元",
+      "submission": {
+        "traffic_master_threshold": "500 粉丝",
+        "appreciation_threshold": "3 篇原创",
+        "interactive_ad_threshold": "500 粉丝"
+      },
+      "novel_distribution": "可做小说分销CPS"
+    },
+
+    "xiaohongshu": {
+      "id": "xiaohongshu",
+      "name": "小红书",
+      "owner": "行吟信息",
+      "url": "https://www.xiaohongshu.com/",
+      "rating": 4,
+      "channels": ["female", "unisex"],
+      "audience": {
+        "gender": "female_70",
+        "age": "18-35",
+        "tier": "tier1_tier2",
+        "payment_will": "high"
+      },
+      "preferred_genres": [
+        "modern_romance", "realistic", "suspense",
+        "family", "campus", "brain_hole"
+      ],
+      "preferred_subgenres": [
+        "real_life_story", "family_conflict",
+        "marriage_drama", "workplace_complain",
+        "real_event_adapt", "anecdote_strange"
+      ],
+      "word_count": {
+        "note": {"min": 50, "max": 1000},
+        "long_note": {"min": 1000, "max": 5000}
+      },
+      "rhythm": "碎片化叙事+强情绪标签",
+      "pov": ["first_person"],
+      "style": "xhs_style",
+      "style_rules": [
+        "真实感",
+        "口语化",
+        "强情绪标签（真实事件改编/离奇经历）",
+        "标题党适度",
+        "图文+长文形式"
+      ],
+      "revenue_model": "ads_plus_paid_note_2026",
+      "paid_note": {
+        "threshold": "100 粉丝起",
+        "modes": ["高清原图付费下载", "单篇付费阅读（试读20%）", "合集付费解锁"]
+      },
+      "traffic_advantage": "50% 流量给千粉以下账号",
+      "ip_adaptation_potential": "rising"
+    },
+
+    "qidian": {
+      "id": "qidian",
+      "name": "起点中文网",
+      "owner": "阅文集团",
+      "url": "https://www.qidian.com/",
+      "app": "起点读书",
+      "rating": 3,
+      "channels": ["male"],
+      "audience": {
+        "gender": "male_60",
+        "age": "18-35",
+        "tier": "all_tiers",
+        "payment_will": "high_mature"
+      },
+      "preferred_genres": [
+        "fantasy", "xianxia", "urban", "game",
+        "scifi", "history", "anime", "fanfic"
+      ],
+      "preferred_subgenres": [
+        "western_fantasy_cthulhu", "level_up_pa",
+        "harem_war_god", "modern_cultivation",
+        "rebirth_dou_po", "signing_system",
+        "isekai_otaku", "apocalypse"
+      ],
+      "short_story_support": "low_priority",
+      "short_story_note": "起点本质是长篇平台，百万字起步。短篇（<5万字）在此平台不会有大成绩，最多练手或脑洞流",
+      "word_count": {"min": 1000000, "typical": 3000000, "chapter_ideal": 4000},
+      "rhythm": "单章3000-4500字完整结构+每3-5章大爆点+前10章决定追读率+螺旋升级",
+      "pov": ["third_person_limited"],
+      "style": "qidian_male",
+      "style_rules": [
+        "第三人称限知为主（男频极少第一人称）",
+        "句子有节奏感，比飞卢细比晋江糙——硬朗有质感",
+        "战斗场景详细：招式、能量等级、对抗过程写清楚",
+        "升级要有数据感/等级感（练气一层→二层，战力100→500）",
+        "主角内心独白克制，重在行动和决策",
+        "对手必须有智商和实力，装逼打脸要打得漂亮",
+        "适度网文行话（金手指、苟道、扮猪吃虎、龙傲天）",
+        "世界观必须有逻辑，设定自洽，战力不崩坏"
+      ],
+      "structure": {
+        "opening": "黄金三章：第1章立人设+亮金手指+引入核心冲突+结尾钩子，前10章交代世界观/金手指/矛盾/目标",
+        "middle": "螺旋上升：小目标→升级→走出小圈子→遇强敌→突破→更大世界→再升级，稳定爽感",
+        "ending": "持续升级中自然收束或留续作空间，拒绝烂尾"
+      },
+      "taboo": [
+        "涉政", "色情（连暧昧描写都要克制）",
+        "极端暴力血腥", "违法犯罪手法详述",
+        "反智剧情（主角被低智骗局骗到）",
+        "打脸过于离谱（对方完全不反抗）",
+        "AI痕迹明显（起点编辑会查）",
+        "抄袭经典设定与桥段（抄袭红线极严）",
+        "涉及真实政治、军事、宗教"
+      ],
+      "revenue_model": "subscription_plus_reward",
+      "revenue": {
+        "guarantee": "10万字上架后日更4000字月12万字得600元全勤",
+        "subscription": "另算",
+        "monthly_ticket": "第1名1万，2-3名6千"
+      },
+      "submission": {
+        "url": "https://write.qidian.com/",
+        "min_words_for_publishing": 100000,
+        "daily_update_requirement": "4000字",
+        "needs_outline": false,
+        "review_method": "编辑审核+读者数据（追读率定生死）",
+        "contract_types": ["分成签约", "买断签约", "保底分成"]
+      },
+      "hot_topics_2026": [
+        "诡秘流（克系+东方玄幻融合）",
+        "末日废土重建",
+        "都市异能新浪潮",
+        "数据化修仙",
+        "赛博修仙（科技+修真）",
+        "AI觉醒题材",
+        "无限流回潮",
+        "苟道长生流",
+        "大国重工/科技兴国"
+      ],
+      "iconic_works": [
+        "诡秘之主", "剑来", "大奉打更人",
+        "这游戏也太真实了", "斗破苍穹",
+        "凡人修仙传", "完美世界", "深空彼岸"
+      ],
+      "ip_adaptation_potential": "for_long_drama_animation"
+    },
+
+    "jjwxc": {
+      "id": "jjwxc",
+      "name": "晋江文学城",
+      "owner": "阅文集团",
+      "url": "https://www.jjwxc.net/",
+      "app": "晋江文学城",
+      "rating": 3,
+      "channels": ["female"],
+      "audience": {
+        "gender": "female_95",
+        "age": "16-35",
+        "tier": "tier1_tier2_oversea_10",
+        "payment_will": "very_high",
+        "note": "付费率行业最高，海外用户超10%"
+      },
+      "preferred_genres": [
+        "modern_romance", "ancient_romance",
+        "danmei", "fantasy_romance",
+        "campus", "future_starry", "scifi",
+        "suspense", "brain_hole"
+      ],
+      "preferred_subgenres": [
+        "sweet_pet", "abuse_redemption", "danmei_pure",
+        "palace_drama", "rural_drama", "female_strong",
+        "rebirth_redemption", "chase_wife",
+        "school_sweetheart", "dead_lit"
+      ],
+      "short_story_support": "medium",
+      "short_story_note": "晋江主流20-100万字，短篇（<5万字）容易扑街，读者习惯深度跟读",
+      "word_count": {"min": 200000, "ideal": 500000, "short_possible": 50000, "chapter_ideal": 4500},
+      "rhythm": "人设鲜明+情感细腻+每章有感情推进或心理推进节点",
+      "pov": ["third_person_limited", "multiple_pov"],
+      "style": "jjwxc_style",
+      "style_rules": [
+        "第三人称限知为主，多POV切换是晋江特色",
+        "文笔要求高：有质感、有节奏、有自己的语言风格",
+        "人设大于情节——人设鲜明度、一致性、辨识度是命",
+        "心理描写细腻但要服务情节，不为了细腻而细腻",
+        "对白要有人物特色（不同角色说话方式应有区别）",
+        "情感表达克制内敛比直白外放更受欢迎",
+        "适度比喻和环境描写烘托氛围",
+        "拒绝纯爽文式语言（'啪的一下扇了他一巴掌'在晋江会被嫌弃）"
+      ],
+      "structure": {
+        "opening": "人物登场+背景铺陈→主角与对照组关系建立→矛盾发生（性格冲突/外部压力）",
+        "middle": "关系推进→危机/分离，重点是情感张力和关系变化，不是打脸升级",
+        "ending": "救赎/和解→升华或留白，拒绝烂尾（晋江读者对烂尾零容忍）"
+      },
+      "taboo": [
+        "涉政", "露骨色情", "未成年涉黄",
+        "NTR/强制/性侵作为爽点处理",
+        "OOC（人物性格崩塌，晋江最大雷）",
+        "AI痕迹明显（晋江读者一眼能识别）",
+        "抄袭融梗（晋江反抄袭力度行业最强）",
+        "歧视任何群体的表达",
+        "耽美/百合必须双向平等相互尊重"
+      ],
+      "revenue_model": "subscription_paid",
+      "revenue": {
+        "subscription_share": "电脑6:4，手机7:3，作者最高15%",
+        "full_attendance": "上月VIP收入7%-12%",
+        "no_guarantee": true,
+        "note": "无保底全勤，纯靠订阅分成，付费率行业最高"
+      },
+      "submission": {
+        "url": "https://www.jjwxc.net/",
+        "min_words_for_signing": 30000,
+        "needs_outline": true,
+        "review_method": "编辑审核+读者数据，入V需要一定收藏数",
+        "contract_note": "签人（笔名专属）或签文（单本授权）"
+      },
+      "hot_topics_2026": [
+        "死遁文学",
+        "强强CP",
+        "追妻火葬场（女频版）",
+        "白月光替身",
+        "ABO设定",
+        "无限流言情",
+        "年代文回潮",
+        "系统攻略",
+        "双向暗恋",
+        "先婚后爱"
+      ],
+      "iconic_works": [
+        "死遁后我成了他的白月光",
+        "老白的春天", "重生九零之我要做大佬",
+        "魔道祖师", "天官赐福",
+        "撒野", "伪装学渣", "全球高考"
+      ],
+      "ip_adaptation_potential": "for_long_drama_publication"
+    },
+
+    "faloo": {
+      "id": "faloo",
+      "name": "飞卢小说",
+      "owner": "上海尧海",
+      "url": "https://b.faloo.com/",
+      "rating": 4,
+      "channels": ["male"],
+      "audience": {
+        "gender": "male_90",
+        "age": "16-30",
+        "tier": "downstream",
+        "payment_will": "subscription"
+      },
+      "preferred_genres": [
+        "fantasy", "urban", "history", "fanfic",
+        "system", "apocalypse", "scifi"
+      ],
+      "preferred_subgenres": [
+        "fanfic_comprehensive_anime", "fanfic_siheyuan",
+        "fanfic_uncle_nine", "signing_system",
+        "lottery_system", "attribute_grab",
+        "live_streaming", "rich_god", "doctor_god",
+        "rebirth_treasure_box"
+      ],
+      "word_count_typical": {"min": 100000, "max": 500000},
+      "rhythm": "日更万字+脑洞+爽点密集",
+      "pov": ["third_person", "first_person"],
+      "style": "faloo_style",
+      "style_rules": [
+        "书名《XX：XXXX》格式",
+        "书名10+字直白爆点",
+        "脑洞大+创意新",
+        "节奏快+爽点密",
+        "金手指强",
+        "50万字到世界首富"
+      ],
+      "iconic_book_names": [
+        "《洪荒：诸天打手群，开局平定黑暗动乱！》",
+        "《全民农场：我的农场亿点强》",
+        "《都市：我的地摊专卖限制级商品》",
+        "《重生：开局攻占全国网吧》"
+      ],
+      "revenue_model": "subscription_short_drama_ip",
+      "revenue_per_thousand": [3, 5],
+      "ip_adaptation_potential": "very_high_male_short_drama"
+    },
+
+    "douban_read": {
+      "id": "douban_read",
+      "name": "豆瓣阅读",
+      "owner": "豆瓣",
+      "url": "https://read.douban.com/",
+      "rating": 3,
+      "channels": ["female", "unisex"],
+      "audience": {
+        "gender": "female_slight",
+        "age": "25-40",
+        "tier": "literary_youth",
+        "payment_will": "medium"
+      },
+      "preferred_genres": [
+        "realistic", "literary_short", "suspense",
+        "scifi", "feminism_topic", "fanfic_open"
+      ],
+      "preferred_subgenres": [
+        "urban_realistic", "workplace_drama",
+        "family_modern", "social_topic",
+        "pure_literary", "puzzle_suspense"
+      ],
+      "word_count": {
+        "short": {"min": 3000, "max": 20000},
+        "long": {"min": 100000}
+      },
+      "rhythm": "文学性+留白+叙事技法",
+      "pov": ["multiple"],
+      "style": "douban_style",
+      "revenue_model": "subscription_pay_per_chapter",
+      "revenue": {
+        "share": "作者60%",
+        "pricing": "3000字0.15元",
+        "ip_potential": "影视改编（豆瓣阅读出过《北京女子图鉴》）"
+      },
+      "ip_adaptation_potential": "literary_adaptation"
+    },
+
+    "ciweimao": {
+      "id": "ciweimao",
+      "name": "刺猬猫阅读",
+      "owner": "杭州狂想",
+      "url": "https://www.ciweimao.com/",
+      "rating": 3,
+      "channels": ["male"],
+      "audience": {
+        "gender": "male_80",
+        "age": "14-25",
+        "tier": "anime_otaku",
+        "payment_will": "subscription_5_7w_paid_users"
+      },
+      "preferred_genres": [
+        "fanfic", "anime_light_novel", "fantasy",
+        "urban", "history", "horror", "xianxia", "game"
+      ],
+      "preferred_subgenres": [
+        "fanfic_comprehensive_anime", "gender_swap",
+        "moe_harem", "yuri_anime", "isekai_otaku",
+        "danmu_interactive"
+      ],
+      "word_count": {"monthly_min": 120000},
+      "rhythm": "二次元宅文+弹幕互动",
+      "pov": ["third_person", "first_person"],
+      "style": "ciweimao_otaku_style",
+      "revenue_model": "subscription_grade_abcd",
+      "revenue": {
+        "grade_A": "8元/千字",
+        "grade_B": "6元/千字",
+        "grade_C": "4元/千字",
+        "grade_D": "2元/千字",
+        "monthly_cap_30w": true,
+        "half_year_bonus": "连续6月达标，新增订阅15%",
+        "top_authors_30_at_50k_monthly": true
+      },
+      "ip_adaptation_potential": "anime_adaptation"
+    },
+
+    "everyday_story": {
+      "id": "everyday_story",
+      "name": "每天读点故事",
+      "owner": "每天读点故事",
+      "url": "https://www.gushi.cn/",
+      "rating": 3,
+      "channels": ["female"],
+      "audience": {
+        "gender": "female_90",
+        "age": "18-40",
+        "tier": "downstream",
+        "payment_will": "one_time_purchase"
+      },
+      "preferred_genres": [
+        "modern_romance", "ancient_romance", "suspense",
+        "urban", "campus", "brain_hole", "family"
+      ],
+      "preferred_subgenres": [
+        "sweet_pet", "chase_wife", "flash_marriage",
+        "ceo_dom", "secret_identity", "rebirth_revenge",
+        "substitute", "marriage_drama", "dead_lit",
+        "true_fake_daughter"
+      ],
+      "word_count": {"min": 5000, "max": 30000, "ideal": 15000},
+      "rhythm": "开篇即冲突+高频情绪爆点+单篇买断制",
+      "pov": ["first_person", "third_person_limited"],
+      "style": "meitian_style",
+      "style_rules": [
+        "开篇150字内必须有冲突或反转",
+        "男女主第一次见面必须有火花",
+        "甜文必须有糖点段落，虐文必须有刀点段落",
+        "每500-1000字一个情绪爆点",
+        "不分章节或最多5-8小段",
+        "男女主互动高密度",
+        "篇幅紧凑，能用1万字讲完不写2万"
+      ],
+      "structure": {
+        "opening": "冲突开场 → 男女主碰撞 → 矛盾升级 → 危机点 → 反转/救赎/复仇 → 团圆或留白",
+        "middle": "男女主互动必须高密度，CP感是命脉",
+        "ending": "结局必须明确：HE/BE/留白三选一，不要中庸"
+      },
+      "taboo": [
+        "涉政", "露骨性描写", "极端暴力",
+        "违法犯罪手法", "NTR强制性侵当爽点",
+        "使用真名", "抄袭其他平台爆款短篇"
+      ],
+      "revenue_model": "one_time_buyout",
+      "revenue_typical_range": [500, 3000],
+      "revenue_unit": "元/篇",
+      "submission": {
+        "url": "https://www.gushi.cn/",
+        "min_words": 5000,
+        "needs_outline": false,
+        "review_time_days": 3,
+        "buyout_typical": "500-3000元/篇",
+        "editor_pick_bonus": "编辑精选另有流量扶持"
+      },
+      "hot_topics_2026": [
+        "豪门闪婚",
+        "马甲文",
+        "追妻火葬场",
+        "甜宠小甜饼",
+        "先婚后爱",
+        "BE美学短篇",
+        "禁欲系男主",
+        "伪装夫妇"
+      ],
+      "iconic_works": [
+        "闪婚后被大佬宠上天", "替身前妻她不干了",
+        "离婚后我成了他的心尖宠", "他和她的秘密"
+      ],
+      "ip_adaptation_potential": "rising_short_drama"
+    },
+
+    "jianshu": {
+      "id": "jianshu",
+      "name": "简书",
+      "owner": "上海简书",
+      "url": "https://www.jianshu.com/",
+      "rating": 2,
+      "channels": ["unisex"],
+      "audience": {
+        "gender": "balanced",
+        "age": "20-40",
+        "tier": "all_tiers",
+        "payment_will": "very_low"
+      },
+      "preferred_genres": [
+        "realistic", "family", "workplace", "suspense",
+        "campus", "anecdote", "literary_short"
+      ],
+      "preferred_subgenres": [
+        "real_life_story", "marriage_drama",
+        "workplace_complain", "social_topic",
+        "real_first_person", "growth_story"
+      ],
+      "word_count": {"min": 1500, "max": 5000, "ideal": 3000},
+      "rhythm": "故事+感悟，适合手机碎片阅读",
+      "pov": ["first_person"],
+      "style": "jianshu_style",
+      "style_rules": [
+        "第一人称为主，亲切随和",
+        "句子明快，避免文艺腔过重",
+        "故事+感悟经典结构（70%+30%）",
+        "每400-600字一个情绪或观点节点",
+        "鸡汤要有温度——基于真实经验不空洞",
+        "段落短，适合手机阅读"
+      ],
+      "structure": {
+        "opening": "用具体场景或观点直接开篇，不绕弯",
+        "middle": "故事段70%+观点段30%，或多层递进",
+        "ending": "点题、升华或留白，有收束感"
+      },
+      "taboo": [
+        "涉政", "色情/擦边", "极端暴力",
+        "违法犯罪手法", "虚假信息（医疗金融法律）",
+        "使用真名做负面虚构", "抄袭洗稿",
+        "煽动性表达（地域性别阶层对立）"
+      ],
+      "revenue_model": "tips_and_coin",
+      "revenue_typical_range": [0, 100],
+      "revenue_unit": "元/篇",
+      "revenue_note": "简书贝+赞赏为主，金额极小，主要用于练手和积累作品",
+      "submission": {
+        "url": "https://www.jianshu.com/writer",
+        "min_words": 1500,
+        "needs_outline": false,
+        "review_method": "投稿专题需编辑审核，直接发布无需审核"
+      },
+      "hot_topics_2026": [
+        "情感故事",
+        "女性成长",
+        "职场经验",
+        "读书笔记",
+        "生活随笔",
+        "个人品牌",
+        "真实经历"
+      ],
+      "iconic_works": [],
+      "ip_adaptation_potential": "low"
+    },
+
+    "lofter": {
+      "id": "lofter",
+      "name": "LOFTER",
+      "owner": "网易",
+      "url": "https://www.lofter.com/",
+      "rating": 3,
+      "channels": ["female"],
+      "audience": {
+        "gender": "female_90",
+        "age": "15-30",
+        "tier": "anime_fan_otaku",
+        "payment_will": "very_low"
+      },
+      "preferred_genres": [
+        "fanfic", "anime_light_novel", "campus",
+        "modern_romance", "fantasy", "danmei",
+        "brain_hole"
+      ],
+      "preferred_subgenres": [
+        "danmei_pure", "sweet_pet", "fanfic_comprehensive_anime",
+        "gender_swap", "real_person_slash", "isekai_otaku",
+        "school_sweetheart", "moe_harem"
+      ],
+      "word_count": {"min": 2000, "max": 30000, "ideal": 10000},
+      "rhythm": "CP互动密集+情感张力充沛+Tag搜索驱动",
+      "pov": ["first_person", "third_person_limited"],
+      "style": "lofter_style",
+      "style_rules": [
+        "CP双方人设极度精准，绝不OOC",
+        "攻受关系必须明确且准确",
+        "文笔有质感（介于晋江和豆瓣之间）",
+        "心理描写细腻，展现CP双方情绪流动",
+        "对白符合原作角色语言特色",
+        "允许诗意化、意象化表达",
+        "绝对不用网文行话（装逼/打脸/金手指）"
+      ],
+      "structure": {
+        "opening": "选取CP关系的截面（初遇/误会/和解/分别/重逢）",
+        "middle": "CP互动推进情绪，AU设定可拓展新世界",
+        "ending": "有余味，让读者嗑到，不一定HE"
+      },
+      "taboo": [
+        "涉政", "露骨性描写",
+        "未成年涉黄（涉及低龄原作角色时极度敏感）",
+        "极端血腥暴力", "违法犯罪手法详述",
+        "真人同人不打码（必须用代称/谐音/首字母）",
+        "CP拉踩（捧一对踩另一对）",
+        "融梗抄袭其他LOFTER作者"
+      ],
+      "revenue_model": "free_with_tips",
+      "revenue_typical_range": [0, 50],
+      "revenue_unit": "元/篇",
+      "revenue_note": "几乎无付费机制，主要靠传播力和粉丝积累，影响力强",
+      "submission": {
+        "url": "https://www.lofter.com/",
+        "min_words": 2000,
+        "needs_outline": false,
+        "tag_importance": "极高——LOFTER不靠算法推流，靠Tag搜索发现内容",
+        "typical_tag_count": "10-20个",
+        "review_method": "直接发布，Tag自动归类"
+      },
+      "hot_topics_2026": [
+        "原神同人",
+        "崩坏星穹铁道同人",
+        "国漫CP",
+        "虚拟主播同人",
+        "影视CP同人",
+        "ABO设定",
+        "古风AU",
+        "重生穿越AU",
+        "校园AU",
+        "双向暗恋"
+      ],
+      "iconic_works": [],
+      "ip_adaptation_potential": "low",
+      "unique_value": "同人圈传播力极强，好作品在圈内可获数千转发，粉丝积累效率高"
+    }
+  },
+
+  "platform_tier_for_short_story": {
+    "tier_S_short_story_paradise": ["zhihu_salt", "fanqie"],
+    "tier_A_short_story_friendly": ["qimao", "toutiao", "weixin_mp", "xiaohongshu"],
+    "tier_B_short_possible": ["faloo", "douban_read", "ciweimao", "everyday_story"],
+    "tier_C_short_not_primary": ["qidian", "jjwxc", "jianshu", "lofter"]
+  },
+
+  "recommended_mvp_platforms": [
+    "zhihu_salt",
+    "fanqie",
+    "qimao",
+    "xiaohongshu",
+    "weixin_mp"
+  ],
+
+  "platform_compatibility_matrix": {
+    "comment": "见 平台题材匹配矩阵.csv，0=不建议 1=可接受 2=主流 3=爆款赛道"
+  }
+}

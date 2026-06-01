@@ -1,0 +1,227 @@
+import { describe, it, expect } from 'vitest'
+import { buildContinueChapterWorkflow, extractChapterContent, computeProgress } from '../agents/workflows/continueChapter'
+import { WorkflowRunner } from '../agents/runner'
+import type { AgentSpec } from '../agents/types'
+import { createConsistencyCheckAgent } from '../agents/steps/consistencyCheck'
+import { createCommitWriteAgent } from '../agents/steps/commitWrite'
+import { createExtractSettingsAgent } from '../agents/steps/extractSettings'
+import { createStyleReviewAgent } from '../agents/steps/styleReview'
+import { createLengthCheckAgent } from '../agents/steps/lengthCheck'
+import { createCompressExpandAgent } from '../agents/steps/compressExpand'
+import { createParagraphFixAgent } from '../agents/steps/paragraphFix'
+
+function fakeAgent(id: string, name: string, output: string): AgentSpec {
+  return {
+    id, name, badge: 'test', desc: 'test',
+    systemPrompt: `You are ${name}`,
+    requiredContext: [],
+    parseOutput: (r) => {
+      try { return JSON.parse(r.replace(/```json\n?/g, '').replace(/```/g, '')) }
+      catch { return { raw: r } }
+    },
+    writeBack: async () => {},
+  }
+}
+
+describe('buildContinueChapterWorkflow', () => {
+  it('generates correct step count for 3 chapters', () => {
+    const steps = buildContinueChapterWorkflow({ chapterCount: 3, startChapterNo: 4, wordsPerChapter: 2000 })
+    // load_context + 3×(gen_body + length_check + compress_expand + paragraph_fix + style_review) + consistency_check + extract_settings + commit_write = 5×3 + 4 = 19
+    expect(steps).toHaveLength(19)
+    expect(steps[0].id).toBe('load_context')
+    expect(steps[0].approval).toBe('auto')
+
+    // gen_body_1 → length_check_1
+    expect(steps[1].id).toBe('gen_body_1')
+    expect(steps[1].approval).toBe('always')
+    expect(steps[1].next).toBe('length_check_1')
+    expect(steps[1].inputs.targetWords).toBe('2000')
+
+    // length_check_1
+    expect(steps[2].id).toBe('length_check_1')
+    expect(steps[2].approval).toBe('auto')
+    expect(steps[2].skippable).toBe(true)
+    expect(steps[2].next).toBe('compress_expand_1')
+
+    // compress_expand_1
+    expect(steps[3].id).toBe('compress_expand_1')
+    expect(steps[3].approval).toBe('always')
+    expect(steps[3].skippable).toBe(true)
+    expect(steps[3].next).toBe('paragraph_fix_1')
+
+    // paragraph_fix_1 → style_review_1
+    expect(steps[4].id).toBe('paragraph_fix_1')
+    expect(steps[4].approval).toBe('auto')
+    expect(steps[4].skippable).toBe(true)
+    expect(steps[4].next).toBe('style_review_1')
+
+    // style_review_1 → gen_body_2
+    expect(steps[5].id).toBe('style_review_1')
+    expect(steps[5].approval).toBe('on_warning')
+    expect(steps[5].next).toBe('gen_body_2')
+
+    // G7: gen_body_N 的 plan 和 continueFrom 应引用显式步骤，而非 @ctx.lastOutput
+    // gen_body_1: plan 和 continueFrom 引用 load_context（首章无前文）
+    expect(steps[1].inputs.plan).toBe('@ctx.step:load_context')
+    expect(steps[1].inputs.continueFrom).toBe('@ctx.step:load_context')
+    // gen_body_2: plan 仍引用 load_context，continueFrom 引用前一章正文
+    expect(steps[6].inputs.plan).toBe('@ctx.step:load_context')
+    expect(steps[6].inputs.continueFrom).toBe('@ctx.step:gen_body_1')
+    // gen_body_3: plan 引用 load_context，continueFrom 引用前一章正文
+    expect(steps[11].inputs.plan).toBe('@ctx.step:load_context')
+    expect(steps[11].inputs.continueFrom).toBe('@ctx.step:gen_body_2')
+
+    // last style_review → consistency_check
+    expect(steps[15].id).toBe('style_review_3')
+    expect(steps[15].next).toBe('consistency_check')
+
+    // G8: consistency_check 应通过 contentKey 显式引用最后一章的 gen_body 正文
+    // 而非依赖 ctx.lastOutput（会被 style_review JSON 覆盖）
+    expect(steps[16].inputs.contentKey).toBe('step:gen_body_3')
+
+    // consistency_check
+    expect(steps[16].id).toBe('consistency_check')
+    expect(steps[16].approval).toBe('on_warning')
+    expect(steps[16].next).toBe('extract_settings')
+
+    // extract_settings → commit_write
+    expect(steps[17].id).toBe('extract_settings')
+    expect(steps[17].approval).toBe('on_warning')
+    expect(steps[17].next).toBe('commit_write')
+
+    // commit_write terminal
+    expect(steps[18].id).toBe('commit_write')
+    expect(steps[18].approval).toBe('always')
+    expect(steps[18].skippable).toBe(false)
+  })
+
+  it('all gen_body steps have approval=always', () => {
+    const steps = buildContinueChapterWorkflow({ chapterCount: 2, startChapterNo: 1, wordsPerChapter: 2000 })
+    const bodySteps = steps.filter(s => s.id.startsWith('gen_body_'))
+    expect(bodySteps.every(s => s.approval === 'always')).toBe(true)
+  })
+
+  it('commit_write is not skippable', () => {
+    const steps = buildContinueChapterWorkflow({ chapterCount: 1, startChapterNo: 1, wordsPerChapter: 2000 })
+    const commit = steps.find(s => s.id === 'commit_write')
+    expect(commit).toBeDefined()
+    expect(commit!.skippable).toBe(false)
+  })
+
+  it('extract_settings is inserted between consistency_check and commit_write', () => {
+    const steps = buildContinueChapterWorkflow({ chapterCount: 1, startChapterNo: 1, wordsPerChapter: 2000 })
+    const idx = steps.findIndex(s => s.id === 'extract_settings')
+    expect(idx).toBeGreaterThan(0)
+    expect(steps[idx - 1].id).toBe('consistency_check')
+    expect(steps[idx].next).toBe('commit_write')
+  })
+})
+
+describe('continueChapter workflow e2e (auto mode)', () => {
+  it('runs all steps and emits run:done in auto mode', async () => {
+    const runner = new WorkflowRunner()
+    runner.registerAgents([
+      fakeAgent('chapter', '章纲规划', '{"plan":"chapter plan"}'),
+      fakeAgent('body', '正文生成', '{"content":"第一章正文"}'),
+      createLengthCheckAgent(),
+      createCompressExpandAgent(),
+      createParagraphFixAgent(),
+      createStyleReviewAgent(),
+      createConsistencyCheckAgent(),
+      createExtractSettingsAgent(),
+      createCommitWriteAgent(),
+    ])
+
+    let callCount = 0
+    runner.setLlmCall(async (_sp: string, _up: string) => {
+      callCount++
+      if (callCount === 1) return '{"plan":"chapter plan"}'
+      if (callCount === 2) return '{"content":"第一章正文"}'
+      // compress_expand step — returns adjusted content
+      if (callCount === 3) return '{"content":"第一章正文（已调整）"}'
+      // style_review step — returns valid review JSON
+      return '{"passed":true,"warnings":[],"summary":"文风审查通过"}'
+    })
+
+    let doneEmitted = false
+    runner.on('run:done', () => { doneEmitted = true })
+
+    const steps = buildContinueChapterWorkflow({ chapterCount: 1, startChapterNo: 1, wordsPerChapter: 2000 })
+    await runner.run(steps, 'auto')
+
+    expect(doneEmitted).toBe(true)
+    expect(runner.status).toBe('done')
+    // History: 9 steps (load_context + gen_body_1 + length_check_1 + compress_expand_1 + paragraph_fix_1 + style_review_1 + consistency_check + extract_settings + commit_write)
+    const historyIds = runner.history.map(h => h.stepId)
+    expect(historyIds).toContain('load_context')
+    expect(historyIds).toContain('gen_body_1')
+    expect(historyIds).toContain('length_check_1')
+    expect(historyIds).toContain('compress_expand_1')
+    expect(historyIds).toContain('paragraph_fix_1')
+    expect(historyIds).toContain('style_review_1')
+    expect(historyIds).toContain('consistency_check')
+    expect(historyIds).toContain('extract_settings')
+    expect(historyIds).toContain('commit_write')
+    expect(runner.history).toHaveLength(9)
+  })
+})
+
+describe('continueChapter workflow e2e (approval mode)', () => {
+  it('pauses on gen_body_1 and commit_write, resumes on approve', async () => {
+    const runner = new WorkflowRunner()
+    runner.registerAgents([
+      fakeAgent('chapter', '章纲规划', '{"plan":"chapter plan"}'),
+      fakeAgent('body', '正文生成', '{"content":"第一章正文"}'),
+      createLengthCheckAgent(),
+      createCompressExpandAgent(),
+      createParagraphFixAgent(),
+      createStyleReviewAgent(),
+      createConsistencyCheckAgent(),
+      createExtractSettingsAgent(),
+      createCommitWriteAgent(),
+    ])
+
+    let callCount = 0
+    runner.setLlmCall(async (_sp: string, _up: string) => {
+      callCount++
+      if (callCount === 1) return '{"plan":"chapter plan"}'
+      if (callCount === 2) return '{"content":"第一章正文"}'
+      // compress_expand
+      if (callCount === 3) return '{"content":"第一章正文（已调整）"}'
+      // style_review
+      return '{"passed":true,"warnings":[],"summary":"文风审查通过"}'
+    })
+
+    // 自动 approve 所有等待步骤
+    runner.on('step:awaiting', () => {
+      setTimeout(() => runner.decide({ type: 'approve' }), 10)
+    })
+
+    let doneEmitted = false
+    runner.on('run:done', () => { doneEmitted = true })
+
+    const steps = buildContinueChapterWorkflow({ chapterCount: 1, startChapterNo: 1, wordsPerChapter: 2000 })
+    await runner.run(steps, 'approval')
+
+    expect(doneEmitted).toBe(true)
+    expect(runner.status).toBe('done')
+  })
+})
+
+describe('extractChapterContent', () => {
+  it('returns plain text as-is', () => {
+    expect(extractChapterContent('正文内容')).toBe('正文内容')
+  })
+
+  it('extracts content from JSON', () => {
+    expect(extractChapterContent(JSON.stringify({ content: '提取的内容' }))).toBe('提取的内容')
+  })
+})
+
+describe('computeProgress', () => {
+  it('0% before start, 100% at end', () => {
+    const steps = buildContinueChapterWorkflow({ chapterCount: 1, startChapterNo: 1, wordsPerChapter: 2000 })
+    expect(computeProgress(steps, -1)).toBe(0)
+    expect(computeProgress(steps, steps.length - 1)).toBe(100)
+  })
+})

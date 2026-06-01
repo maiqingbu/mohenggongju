@@ -1,0 +1,44 @@
+{
+  "name": "novel-studio",
+  "private": true,
+  "version": "0.1.0",
+  "description": "墨衡 — AI 小说创作工作台，Tauri + Vue 3",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "icons": "tauri icon src-tauri/icons/logo.svg -o src-tauri/icons",
+    "build:mac-intel": "tauri build --target x86_64-apple-darwin",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-fs": "^2.5.0",
+    "@tiptap/extension-character-count": "^3.22.4",
+    "@tiptap/starter-kit": "^3.22.4",
+    "@tiptap/vue-3": "^3.22.4",
+    "@vicons/ionicons5": "^0.13.0",
+    "md-editor-v3": "^5.4.0",
+    "naive-ui": "^2.41.0",
+    "pinia": "^2.3.0",
+    "sortablejs": "^1.14.0",
+    "vue": "^3.5.32",
+    "vuedraggable": "^4.1.0",
+    "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@tauri-apps/cli": "^2.10.1",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/test-utils": "^2.4.10",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.6.3",
+    "vite": "^6.4.2",
+    "vitest": "^4.1.5",
+    "vue-tsc": "^2.2.12"
+  }
+}
